@@ -79,16 +79,27 @@ function [return_value] = seasonLength (y,x=0, degree=1, butter1=2,butter2=0.001
     yt = acorf(detrend(ys, degree)',rows(ys)-1)';
 
     
+    #plot(yt,'k');
+    #hold on;
+    #plot(detrend(yt),'r')
+    
     #expanding data by 1 row for regression
-    yt = [yt;yt(end)];
+    #yt = [yt;yt(end)];
+    
+    #plot(yt,'g')
+    #plot(detrend(yt),'c')
+    
+    #uiwait;
+    #hold off;
+    
 
     
     #solving linear regression
-    [X,theta] = linReg(x,yt,1);
+    #[X,theta] = linReg(x,yt,1);
     
     #intersecting regression with autocorrelation
-    alpha = find(abs(yt-X*theta) < 0.001);
-    
+    #alpha = find(abs(yt-X*theta) < 0.001);
+    alpha = find(abs(detrend(yt)) < 0.001);
     
     #calculating distances between points of intersection
     delta = sort(alpha(2:end,1) - alpha(1:end-1,1));
