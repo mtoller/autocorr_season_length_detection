@@ -1,0 +1,1 @@
+histogram - many low values in acf if strong trend is present
