@@ -29,16 +29,52 @@ harmonic = function(n)
   return(cumsum(1/c(1:n)));
 }
 
-aze = function(y, harmon = FALSE, zero_discard=FALSE,skew_correction=FALSE)
+findAndFilter = function(y,m)
 {
-  n = nrow(y);
-  na = n-1;
-  
+  b = butter(5,m);
+  y = filter(b$b,b$a,y);
+  return(y);
+}
+
+sp = function(y)
+{
   a = acf.fft(y);
   a = a[2:length(a)];
   a = a[1:round(length(a)*2/3)];
-  
-  if (harmon == TRUE)
+  na = length(a);
+  p = spec.pgram(a,detrend=FALSE,plot = FALSE);
+  w = welchPSD(as.ts(a),round(na*2/pi));
+  m = (max(p$spec))/na;
+  m = (m + max(w$power)/na)*2*pi;
+  m = min(c(1,m));
+  m = max(c(0.01,m));
+  #plot(p$freq,p$spec,type='l');
+  #plot(w$frequency,w$power,type='l');
+  #print(max(p$spec)/na);
+  #print(max(w$power)/na);
+  #print(round(1/(p$freq[which.max(p$spec)])));
+  #print(round(1/(w$frequency[which.max(w$power)])));
+  #print(m);
+  b1 = round(1/(p$freq[which.max(p$spec)]))
+  b2 = round(1/(w$frequency[which.max(w$power)]))
+  if (min(b1,b2) > 0.8 * max(b1,b2))
+  {
+    b = round((b1+b2)/2);
+    return(c(m,b))
+  }
+  return(c(m,0));
+}
+
+azed = function(y, harmonic_analysis = FALSE, zero_discard=FALSE,skew_correction=FALSE)
+{
+  n = length(y);
+  a = acf.fft(y);
+  a = a[2:length(a)];
+  a = a[1:round(length(a)*2/3)];
+  #plot(y);
+  #plot(a,type = 'l');
+  na = length(a);
+  if (harmonic_analysis == TRUE)
   {
     a = a * (1/harmonic(round(na*2/3)));
   }
@@ -52,6 +88,11 @@ aze = function(y, harmon = FALSE, zero_discard=FALSE,skew_correction=FALSE)
   zeros = delta+eta;
   z_to_z = sort(zeros[2:na]-zeros[1:(na-1)]);
   
+  if (length(z_to_z) < 2)
+  {
+    return(NaN);
+  }
+  
   if (zero_discard == TRUE)
   {
     z_to_z = z_to_z[which(z_to_z >= 3)];
@@ -60,16 +101,14 @@ aze = function(y, harmon = FALSE, zero_discard=FALSE,skew_correction=FALSE)
   d = density(z_to_z,kernel = 'epanechnikov')
   if (skew_correction && skewness(d$y) > 0)
   {
-    d$y = d$y * c(1:round(length(d$y)))/sum(1:length(d$y))*length(d$y)#*skewness(d$y)*IQR(d$x) * length(d$y)/10;
+    d$y = d$y * c(1:round(length(d$y)))/sum(1:length(d$y))*length(d$y);
   }
   zero_matrix = matrix(0,length(z_to_z),2);
   zero_matrix[,1] = z_to_z;
-  par(mfrow=c(2,2));
-  plot(y);
-  plot(a,type = 'l');
   
-  plot(zero_matrix);
-  plot(d);
+  
+  #plot(zero_matrix);
+  #plot(d);
   
   return(d);
 }
@@ -78,26 +117,58 @@ trueSeasonLength = function(y){
   library(signal);
   library(forecast);
   library(pracma);
+  library(bspec);
   source('fastAcf.R')
   source('fastMa.R')
   if (!is.ts(y))
   {
     print('y must be a time series')
-    return(1);
+    return(0);
   }
   if (frequency(y) != 1)
   {
     print('y already has a frequency');
     return(frequency(y));
   }
-  
+  if (anyNA(y))
+  {
+    print('NA is not supported')
+    return(0);
+  }
+  if (any(is.infinite(y)) || any(is.complex(y)))
+  {
+    print('complex numbers are not supported');
+    return(0);
+  }
+  if (var(y) == 0)
+  {
+    print('y has no variance');
+    return(0);
+  }
+  #par(mfrow=c(4,2));
   n = nrow(y);
-  na = n-1;
   y = detrend(y);
   y = scale(y);
-  #b = butter(2,0.1);
-  #y = filter(b$b,b$a,y);
-  dens = aze(y);
+  #plot(y);
+  a = acf.fft(y);
+  #plot(a,type = 'l');
+  m = sp(y);
+  s0 = m[2];
+  m = m[1];
+  if (s0 != 0)
+  {
+    return(s0);
+  }
+  if (m < 1)
+  {
+    y = findAndFilter(y,m);
+  }
+  m = sp(y);
+  dens = azed(y);
+  if (!is.list(dens) && is.nan(dens))
+  {
+    return(0);
+  }
   s = round(dens$x[which.max(dens$y)]*2);
   
   
@@ -111,14 +182,12 @@ trueSeasonLength = function(y){
   #implement old algorithm in R
   #anisotropic diffusion
   
-  #hist(a,c(-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0),freq = FALSE)
+  
 
   #print(mean(a));
   #print(std(a));
   #print(skewness(a));
   #print(excess(a));
-  
-  #hist(y,c(-3.0,-2.0,-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,2.0,3.0));
   #ma = as.ts(fastMa(a,round(s/2)));
   #if (skewness(d$y) > 0)
   #{
