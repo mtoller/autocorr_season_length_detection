@@ -95,10 +95,11 @@ testMultiple = function(expected,name,number)
       else if (j == ncol(expected))
       {
         bin[i] = 0;
+        which_one[i] = 1;
       }
     }
   }
-  matrix(append(c(1:n),which_one),nrow=n,ncol=2)
+  which_one = (cbind(c(1:n),c(which_one)));
   print(paste(passed," out of ",n,sep='',collapse = ' '));
   print(t(matrix(c(bin,results,expected[which_one]),nrow=n,ncol=3)));
   #print(paste(c("Passed:   ",bin),sep='',collapse = ' '));

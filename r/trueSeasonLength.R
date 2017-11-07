@@ -47,7 +47,7 @@ sp = function(y)
   m = (max(p$spec))/na;
   m = (m + max(w$power)/na)*2*pi;
   m = min(c(1,m));
-  m = max(c(0.01,m));
+  m = max(c(0.05,m));
   #plot(p$freq,p$spec,type='l');
   #plot(w$frequency,w$power,type='l');
   #print(max(p$spec)/na);
