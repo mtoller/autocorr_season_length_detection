@@ -57,7 +57,7 @@ testAll = function()
   expected = c(4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32786,65536);
   sum = sum + testSuite(expected,"../../test6/t",6);
 
-  expected = c(0,0,0,0,0,0,0,0,0,0)
+  expected = c(1,1,1,1,1,1,1,1,1,1)
   sum = sum + testSuite(expected,"../../test7/t",7);
   
   expected = c(12,12,12,4,12,6,6,6,12,6,4,12,12,12,12,12,3,3,12,12)
@@ -66,48 +66,11 @@ testAll = function()
   expected = c(12,12,12,12,12,12,12,130,12,12,12,12,12,12,130,12,12,12,12,12)
   sum = sum + testSuite(expected,"../../testC/t",9);
   
-  print(paste('Total: ', sum, ' out of 165'));
+  print(paste('Total: ', sum, ' out of 165',sep=''));
   print('original seasonLength passes 122');
   print('findFrequency passes 83');
 }
 
-testMultiple = function(expected,name,number)
-{
-  n = nrow(expected);
-  passed = 0;
-  results = c(1:n);
-  bin = c(1:n);
-  which_one = c(1:n);
-  print(paste("Test suite ",number,":",sep=''));
-  for (i in 1:n)
-  {
-    result = testTrueSeasonLength(paste(name,i,sep='',collapse = ' '));
-    results[i] = result;
-    for (j in 1:ncol(expected))
-    {
-      if ((result >= (expected[i,j]*0.8))  && (result <= (expected[i,j]*1.2)))
-      {
-        passed = passed + 1;
-        bin[i] = 1;
-        which_one[i] = j;
-        break;
-      }
-      else if (j == ncol(expected))
-      {
-        bin[i] = 0;
-        which_one[i] = 1;
-      }
-    }
-  }
-  which_one = (cbind(c(1:n),c(which_one)));
-  print(paste(passed," out of ",n,sep='',collapse = ' '));
-  print(t(matrix(c(bin,results,expected[which_one]),nrow=n,ncol=3)));
-  #print(paste(c("Passed:   ",bin),sep='',collapse = ' '));
-  #print(paste(c("Results:  ",results),sep='',collapse = ' '));
-  #print(paste(c("Expected: ", expected),sep = '',collapse = ' '));
-  print("");
-  return(passed);
-}
 
 testSuite = function(expected,name,number)
 {
@@ -133,6 +96,44 @@ testSuite = function(expected,name,number)
   
   print(paste(passed," out of ",n,sep='',collapse = ' '));
   print(t(matrix(c(bin,results,expected),nrow=n,ncol=3)));
+  #print(paste(c("Passed:   ",bin),sep='',collapse = ' '));
+  #print(paste(c("Results:  ",results),sep='',collapse = ' '));
+  #print(paste(c("Expected: ", expected),sep = '',collapse = ' '));
+  print("");
+  return(passed);
+}
+
+testMultiple = function(expected,name,number)
+{
+  n = nrow(expected);
+  passed = 0;
+  results = c(1:n);
+  bin = c(1:n);
+  solution = c(1:n);
+  print(paste("Test suite ",number,":",sep=''));
+  for (i in 1:n)
+  {
+    result = testTrueSeasonLength(paste(name,i,sep='',collapse = ' '));
+    results[i] = result;
+    for (j in 1:ncol(expected))
+    {
+      if ((result >= (expected[i,j]*0.8))  && (result <= (expected[i,j]*1.2)))
+      {
+        passed = passed + 1;
+        bin[i] = 1;
+        solution[i] = j;
+        break;
+      }
+      else if (j == ncol(expected))
+      {
+        bin[i] = 0;
+        solution[i] = 1;
+      }
+    }
+  }
+  solution = (cbind(c(1:n),c(solution)));
+  print(paste(passed," out of ",n,sep='',collapse = ' '));
+  print(t(matrix(c(bin,results,expected[solution]),nrow=n,ncol=3)));
   #print(paste(c("Passed:   ",bin),sep='',collapse = ' '));
   #print(paste(c("Results:  ",results),sep='',collapse = ' '));
   #print(paste(c("Expected: ", expected),sep = '',collapse = ' '));
