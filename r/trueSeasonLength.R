@@ -43,7 +43,18 @@ spectral_analysis = function(y)
   autocorrelation = autocorrelation[1:round(length(autocorrelation)*2/3)];
   n = length(autocorrelation);
   periodigram = spec.pgram(autocorrelation,detrend=FALSE,plot = FALSE);
-  welch = welchPSD(as.ts(autocorrelation),round(n*2/pi));
+  
+  if (round(n*2/pi) >= 4)
+  {
+    welch = welchPSD(as.ts(autocorrelation),round(n*2/pi));
+  }
+  else
+  {
+    welch = welchPSD(as.ts(autocorrelation),n);
+  }
+  
+  
+  
   cutoff = (max(periodigram$spec))/n;
   cutoff = (cutoff + max(welch$power)/n)*2*pi;
   cutoff = min(c(1,cutoff));
@@ -143,6 +154,10 @@ trueSeasonLength = function(y){
     print('y has no variance');
     return(1);
   }
+  
+  #if (length(y) < 22) {
+  #  return(1);
+  #}
   #par(mfrow=c(4,2));
   y = detrend(as.vector(y));
   y = scale(y);
@@ -162,6 +177,7 @@ trueSeasonLength = function(y){
   {
     return(1);
   }
+  
   result2 = round(dens$x[which.max(dens$y)]*2);
   
   
