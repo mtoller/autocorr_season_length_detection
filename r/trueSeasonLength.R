@@ -29,55 +29,104 @@ harmonic = function(n)
   return(cumsum(1/c(1:n)));
 }
 
-aze = function(y, harmon = FALSE, zero_discard=FALSE,skew_correction=FALSE)
+findAndFilter = function(y,m)
 {
-  n = nrow(y);
-  na = n-1;
+  b = butter(5,m);
+  y = filter(b$b,b$a,y);
+  return(y);
+}
+
+spectral_analysis = function(y)
+{
+  autocorrelation = acf.fft(y);
+  autocorrelation = autocorrelation[2:length(autocorrelation)];
+  autocorrelation = autocorrelation[1:round(length(autocorrelation)*2/3)];
+  n = length(autocorrelation);
+  periodigram = spec.pgram(autocorrelation,detrend=FALSE,plot = FALSE);
   
-  a = acf.fft(y);
-  a = a[2:length(a)];
-  a = a[1:round(length(a)*2/3)];
-  
-  if (harmon == TRUE)
+  if (round(n*2/pi) >= 4)
   {
-    a = a * (1/harmonic(round(na*2/3)));
+    welch = welchPSD(as.ts(autocorrelation),round(n*2/pi));
+  }
+  else
+  {
+    welch = welchPSD(as.ts(autocorrelation),n);
   }
   
-  signs = a;
+  
+  
+  cutoff = (max(periodigram$spec))/n;
+  cutoff = (cutoff + max(welch$power)/n)*2*pi;
+  cutoff = min(c(1,cutoff));
+  cutoff = max(c(0.05,cutoff));
+  #plot(p$freq,p$spec,type='l');
+  #plot(w$frequency,w$power,type='l');
+  #print(max(p$spec)/na);
+  #print(max(w$power)/na);
+  #print(round(1/(p$freq[which.max(p$spec)])));
+  #print(round(1/(w$frequency[which.max(w$power)])));
+  #print(m);
+  period1 = round(1/(periodigram$freq[which.max(periodigram$spec)]))
+  period2 = round(1/(welch$frequency[which.max(welch$power)]))
+  if (min(period1,period2) > 0.8 * max(period1,period2))
+  {
+    return(c(cutoff,round((period1+period2)/2)))
+  }
+  return(c(cutoff,1));
+}
+
+azed = function(y, harmonic_analysis = FALSE, zero_discard=FALSE,skew_correction=FALSE)
+{
+  autocorrelation = acf.fft(y);
+  autocorrelation = autocorrelation[2:length(autocorrelation)];
+  autocorrelation = autocorrelation[1:round(length(autocorrelation)*2/3)];
+  #plot(y);
+  #plot(a,type = 'l');
+  n = length(autocorrelation);
+  if (harmonic_analysis == TRUE)
+  {
+    autocorrelation = autocorrelation * (1/harmonic(round(n*2/3)));
+  }
+  
+  signs = autocorrelation;
   signs[which(signs < 0)] = -1;
   signs[which(signs > 0)] = 1;
   
-  delta = which(signs[2:na] + signs[1:(na-1)] == 0);
-  eta = a[delta] / (-1*(a[delta+1]-a[delta]));
-  zeros = delta+eta;
-  z_to_z = sort(zeros[2:na]-zeros[1:(na-1)]);
+  zero_distance_raw = which(signs[2:n] + signs[1:(n-1)] == 0);
+  interpolation = autocorrelation[zero_distance_raw] / (-1*(autocorrelation[zero_distance_raw+1]-autocorrelation[zero_distance_raw]));
+  zero_distance_exact = zero_distance_raw+interpolation;
+  z_to_z = sort(zero_distance_exact[2:n]-zero_distance_exact[1:(n-1)]);
+  
+  if (length(z_to_z) < 2)
+  {
+    return(NaN);
+  }
   
   if (zero_discard == TRUE)
   {
     z_to_z = z_to_z[which(z_to_z >= 3)];
   }
   
-  d = density(z_to_z,kernel = 'epanechnikov')
-  if (skew_correction && skewness(d$y) > 0)
+  dens = density(z_to_z,kernel = 'epanechnikov')
+  if (skew_correction && skewness(dens$y) > 0)
   {
-    d$y = d$y * c(1:round(length(d$y)))/sum(1:length(d$y))*length(d$y)#*skewness(d$y)*IQR(d$x) * length(d$y)/10;
+    dens$y = dens$y * c(1:round(length(dens$y)))/sum(1:length(dens$y))*length(dens$y);
   }
   zero_matrix = matrix(0,length(z_to_z),2);
   zero_matrix[,1] = z_to_z;
-  par(mfrow=c(2,2));
-  plot(y);
-  plot(a,type = 'l');
   
-  plot(zero_matrix);
-  plot(d);
   
-  return(d);
+  #plot(zero_matrix);
+  #plot(d);
+  
+  return(dens);
 }
 
 trueSeasonLength = function(y){
   library(signal);
   library(forecast);
   library(pracma);
+  library(bspec);
   source('fastAcf.R')
   source('fastMa.R')
   if (!is.ts(y))
@@ -90,15 +139,46 @@ trueSeasonLength = function(y){
     print('y already has a frequency');
     return(frequency(y));
   }
+  if (anyNA(y))
+  {
+    print('NA is not supported')
+    return(1);
+  }
+  if (any(is.infinite(y)) || any(is.complex(y)))
+  {
+    print('complex numbers are not supported');
+    return(1);
+  }
+  if (var(y) == 0)
+  {
+    print('y has no variance');
+    return(1);
+  }
   
-  n = nrow(y);
-  na = n-1;
-  y = detrend(y);
+  #if (length(y) < 22) {
+  #  return(1);
+  #}
+  #par(mfrow=c(4,2));
+  y = detrend(as.vector(y));
   y = scale(y);
-  #b = butter(2,0.1);
-  #y = filter(b$b,b$a,y);
-  dens = aze(y);
-  s = round(dens$x[which.max(dens$y)]*2);
+  spectral_result = spectral_analysis(y);
+  result1 = spectral_result[2];
+  cutoff = spectral_result[1];
+  if (result1 != 1)
+  {
+    return(result1);
+  }
+  if (cutoff < 1)
+  {
+    y = findAndFilter(y,cutoff);
+  }
+  dens = azed(y);
+  if (!is.list(dens) && is.nan(dens))
+  {
+    return(1);
+  }
+  
+  result2 = round(dens$x[which.max(dens$y)]*2);
   
   
   
@@ -111,14 +191,12 @@ trueSeasonLength = function(y){
   #implement old algorithm in R
   #anisotropic diffusion
   
-  #hist(a,c(-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0),freq = FALSE)
+  
 
   #print(mean(a));
   #print(std(a));
   #print(skewness(a));
   #print(excess(a));
-  
-  #hist(y,c(-3.0,-2.0,-1.0,-0.9,-0.8,-0.7,-0.6,-0.5,-0.4,-0.3,-0.2,-0.1,0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,2.0,3.0));
   #ma = as.ts(fastMa(a,round(s/2)));
   #if (skewness(d$y) > 0)
   #{
@@ -178,5 +256,5 @@ trueSeasonLength = function(y){
   #print(noise_partition);
   
   #-----------------------------
-  return(s);
+  return(result2);
 }
