@@ -1,7 +1,6 @@
 SeasonLength is a Octave/Matlab function for detecting the season length of time series.
-An R implementation can be found in folder 'r'.
+An R implementation can be found in the folder 'r'.
 
 The implementation seasonLength is based on:
 Toller, Maximilian, and Roman Kern. "Robust Parameter-Free Season Length Detection in Time Series." 3rd SIGKDD Workshop on Mining and Learning from Time Series (2017).
-
 
