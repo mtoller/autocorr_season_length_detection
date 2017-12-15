@@ -14,6 +14,61 @@ testTrueSeasonLength = function(datafile){
   return(trueSeasonLength(y));
 }
 
+testPublicDatasets <- function()
+{
+  public_datasets <- list()
+  public_datasets[["fma"]] <- c("airpass", "beer", "bricksq", "condmilk", "elec", "fancy", "hsales",
+                                "hsales2", "labour", "milk", "motion", "plastics", "qsales", "ukdeaths",
+                                "usdeaths", "uselec", "writing")
+  public_datasets[["expsmooth"]] <- c("cangas", "enplanements", "frexport", "mcopper", "ukcars", "utility", 
+                                      "vehicles", "visitors")
+  public_datasets[["fpp2"]] <- c("a10", "ausbeer", "auscafe", "austourists", "debitcards", "elecequip", "h02",
+                                 "hyndsight", "qauselec", "qcement", "qgas", "usmelec")
+  public_datasets[["TSA"]] <- c("airmiles", "co2", "flow", "JJ", "oilfilters", "retail", "tempdub")
+  public_datasets[["astsa"]] <- c("birth", "cmort", "flu", "gas", "oil", "part", "prodn", "rec",
+                                  "so2", "soi", "sunspotz", "tempr", "UnempRate")
+  public_datasets[["AER"]] <- c("DutchSales", "UKNonDurables")
+  number_public_datasets <- Reduce(sum, lapply(public_datasets, length))
+  
+  actual_results <- c()
+  findfreq_basic_results <- c()
+  findfreq_advanced_results <- c()
+  trueseason_results <- c()
+  #install.packages(c("fma", "expsmooth", "fpp2", "TSA", "astsa", "AER"))
+  source('trueSeasonLength.R')
+  source('baselines.R')
+  dataset_libraries <- c("fma", "expsmooth", "fpp2", "TSA", "astsa", "AER")
+  for (a_dataset_library in dataset_libraries) {
+    library(a_dataset_library, character.only = T)
+    data(list = public_datasets[[a_dataset_library]])
+    for (a_dataset in public_datasets[[a_dataset_library]]) {
+      ts_data <- get(a_dataset)
+      ts_data_nofreq <- ts(as.vector(ts_data), frequency = 1)
+      actual_results <- c(actual_results, frequency(ts_data))
+      findfreq_basic_results <- c(findfreq_basic_results, find.freq(ts_data_nofreq))
+      findfreq_advanced_results <- c(findfreq_advanced_results, findfrequency(ts_data_nofreq))
+      trueseason_results <- c(trueseason_results, trueSeasonLength(ts_data_nofreq))
+    }
+  }
+  #Accuracy
+  cat(paste0('find.freq passes ', length(which(findfreq_basic_results == actual_results)), 
+             ' out of ', number_public_datasets, '\n'))
+  cat(paste0('findfrequency passes ', length(which(findfreq_advanced_results == actual_results)), 
+             ' out of ', number_public_datasets, '\n'))
+  cat(paste0('trueseasonlength passes ', length(which(trueseason_results == actual_results)), 
+             ' out of ', number_public_datasets, '\n'))
+  #Friedman Rank Test - best algorithm is the one with lowest distance to actual_results (hence decreasing=F)
+  #if (!require("devtools")) {
+  #  install.packages("devtools")
+  #}
+  #devtools::install_github("b0rxa/scmamp")
+  library(scmamp)
+  plotCD(data.frame(hynd_basic=abs(findfreq_basic_results - actual_results), 
+                    hynd_advanced=abs(findfreq_advanced_results - actual_results), 
+                    trueseason=abs(trueseason_results - actual_results)), 
+         decreasing=F)
+}
+
 testAll = function()
 {
   sum = 0;
