@@ -21,18 +21,28 @@ compareMethods = function(y)
   #z = z[1:round(length(z)*2/3)];
   #plot(z,type='l');
   source('trueSeasonLength.R');
+  source('sazed.R')
   cat(paste0('Expected -> ',frequency(y),'\n'));
-  cat(paste0('Method1: periodigram -> ',spectral_analysis(z),'\n'));
+  #cat(paste0('Method1: periodigram -> ',spectral_analysis(y),'\n'));
   #z = findAndFilter(z);
-  cat(paste0('Method2: symbol ->',symbol(z),'\n'));
-  cat(paste0('Method3: azed->',azed(z),'\n'));
-  cat(paste0('Method4: peak->',peak(z),'\n'));
-  cat(paste0('Method5: combined->',trueSeasonLength(y),'\n'));
-  
+  #cat(paste0('Method2: symbol ->',symbol(z),'\n'));
+  #cat(paste0('Method3: azed->',azed(y),'\n'));
+  #cat(paste0('Method4: peak->',peak(z),'\n'));
+  cat(paste0('Method1: S->',S(y),'\n'));
+  cat(paste0('Method2: Sa->',Sa(y),'\n'));
+  cat(paste0('Method3: ze->',ze(y),'\n'));
+  cat(paste0('Method4: zed->',zed(y),'\n'));
+  cat(paste0('Method5: azed->',azed(y),'\n'));
+  cat(paste0('Method6: sazed->',sazed(y),'\n'));
+  cat(paste0('Method7: fazed->',fazed(y),'\n'));
+  cat(paste0('Method8: sfs->',sfs(y),'\n'));
+  cat(paste0('Method9: findfrequency->',findfrequency(y),'\n'));
+  cat(paste0('Method10: find.freq->',find.freq(y),'\n'));
+
 }
-testTrueSeasonLength = function(datafile){
+testSeasonLength = function(datafile){
   #print(datafile);
-  source('trueSeasonLength.R');
+  source('seasonLength.R');
   y = read.table(datafile);
   if (length(y) == 2)
   {
@@ -43,12 +53,53 @@ testTrueSeasonLength = function(datafile){
     y = y[1];
   }  
   y = as.ts(y);
+  return(seasonLength(y));
+}
+
+
+testTrueSeasonLength = function(datafile){
+  #print(datafile);
+  source('trueSeasonLength.R');
+  if (is.character(datafile))
+  {
+    y = read.table(datafile);
+    if (length(y) == 2)
+    {
+      y = y[2];
+    }
+    else
+    {
+      y = y[1];
+    }  
+    y = as.ts(y);
+  }
+  else
+  {
+    y = as.ts(as.vector(datafile));
+  } 
+  
   return(trueSeasonLength(y));
 }
+testSazed = function(datafile){
+  #print(datafile);
+  source('sazed.R');
+  y = read.table(datafile);
+  if (length(y) == 2)
+  {
+    y = y[2];
+  }
+  else
+  {
+    y = y[1];
+  }  
+  y = as.ts(y);
+  return(sazed(y));
+}
+
 
 testPublicDatasets <- function()
 {
-  source('seasonLength.R')
+  
   public_datasets <- list()
   public_datasets[["fma"]] <- c("airpass", "beer", "bricksq", "condmilk", "elec", "fancy", "hsales",
                                 "hsales2", "labour", "milk", "motion", "plastics", "qsales", "ukdeaths",
@@ -66,12 +117,21 @@ testPublicDatasets <- function()
   actual_results <- c()
   findfreq_basic_results <- c()
   findfreq_advanced_results <- c()
-  trueseason_results <- c()
-  robust_results = c()
-  new_results = c()
+  s_results = c()
+  sa_results = c()
+  ze_results = c()
+  zed_results = c()
+  azed_results = c()
+  fazed_results = c()
+  sazed_results = c()
+  sfs_results = c()
+  ensemble_results = c()
+  #seasonLength_results = c()
   #install.packages(c("fma", "expsmooth", "fpp2", "TSA", "astsa", "AER"))
   source('trueSeasonLength.R')
   source('baselines.R')
+  source('newSeasonLength.R')
+  source('sazed.R')
   dataset_libraries <- c("fma", "expsmooth", "fpp2", "TSA", "astsa", "AER")
   for (a_dataset_library in dataset_libraries) {
     library(a_dataset_library, character.only = T)
@@ -82,9 +142,16 @@ testPublicDatasets <- function()
       actual_results <- c(actual_results, frequency(ts_data))
       findfreq_basic_results <- c(findfreq_basic_results, find.freq(ts_data_nofreq))
       findfreq_advanced_results <- c(findfreq_advanced_results, findfrequency(ts_data_nofreq))
-      trueseason_results <- c(trueseason_results, trueSeasonLength(ts_data_nofreq))
-      robust_results = c(robust_results,seasonLength(ts_data_nofreq))
-      new_results = c(new_results,newSeasonLength(ts_data_nofreq))
+      s_results = c(s_results,S(ts_data_nofreq))
+      sa_results = c(sa_results,Sa(ts_data_nofreq))
+      ze_results = c(ze_results,ze(ts_data_nofreq))
+      zed_results = c(zed_results,zed(ts_data_nofreq))
+      azed_results = c(azed_results,azed(ts_data_nofreq))
+      fazed_results = c(fazed_results,fazed(ts_data_nofreq))
+      sazed_results = c(sazed_results,sazed(ts_data_nofreq))
+      sfs_results = c(sfs_results,sfs(ts_data_nofreq))
+      ensemble_results = c(ensemble_results,ensemble(ts_data_nofreq))
+      #seasonLength_results = c(seasonLength_results,callSeasonLength(ts_data_nofreq))
     }
   }
   #Accuracy
@@ -92,12 +159,26 @@ testPublicDatasets <- function()
              ' out of ', number_public_datasets, '\n'))
   cat(paste0('findfrequency passes ', length(which(findfreq_advanced_results == actual_results)), 
              ' out of ', number_public_datasets, '\n'))
-  cat(paste0('trueseasonlength passes ', length(which(trueseason_results == actual_results)), 
+  cat(paste0('s passes ', length(which(s_results == actual_results)), 
              ' out of ', number_public_datasets, '\n'))
-  cat(paste0('robustseasonlength passes ', length(which(robust_results == actual_results)), 
+  cat(paste0('sa passes ', length(which(sa_results == actual_results)), 
              ' out of ', number_public_datasets, '\n'))
-  cat(paste0('newseasonlength passes ', length(which(new_results == actual_results)), 
+  cat(paste0('ze passes ', length(which(ze_results == actual_results)), 
              ' out of ', number_public_datasets, '\n'))
+  cat(paste0('zed passes ', length(which(zed_results == actual_results)), 
+             ' out of ', number_public_datasets, '\n'))
+  cat(paste0('azed passes ', length(which(azed_results == actual_results)), 
+             ' out of ', number_public_datasets, '\n'))
+  cat(paste0('fazed passes ', length(which(fazed_results == actual_results)), 
+             ' out of ', number_public_datasets, '\n'))
+  cat(paste0('sazed passes ', length(which(sazed_results == actual_results)), 
+             ' out of ', number_public_datasets, '\n'))
+  cat(paste0('sfs passes ', length(which(sfs_results == actual_results)), 
+             ' out of ', number_public_datasets, '\n'))
+  cat(paste0('ensemble passes ', length(which(ensemble_results == actual_results)), 
+             ' out of ', number_public_datasets, '\n'))
+  #cat(paste0('seasonLength passes ', length(which(seasonLength_results == actual_results)), 
+  #           ' out of ', number_public_datasets, '\n'))
   #Friedman Rank Test - best algorithm is the one with lowest distance to actual_results (hence decreasing=F)
   #if (!require("devtools")) {
   #  install.packages("devtools")
@@ -105,9 +186,18 @@ testPublicDatasets <- function()
   #devtools::install_github("b0rxa/scmamp")
   library(scmamp)
   plotCD(data.frame(hynd_basic=abs(findfreq_basic_results - actual_results), 
-                    hynd_advanced=abs(findfreq_advanced_results - actual_results), 
-                    trueseason=abs(trueseason_results - actual_results),
-                    robust=abs(robust_results - actual_results),new=abs(new_results-actual_results)),
+                    hynd_advanc=abs(findfreq_advanced_results - actual_results),
+                    s=abs(s_results - actual_results),
+                    sa=abs(sa_results - actual_results),
+                    ze=abs(ze_results - actual_results),
+                    zed=abs(zed_results - actual_results),
+                    azed=abs(azed_results - actual_results),
+                    fazed=abs(fazed_results - actual_results),
+                    sazed=abs(sazed_results - actual_results),
+                    sfs=abs(sfs_results - actual_results),
+                    ensemble=abs(ensemble_results - actual_results)
+                    #seasonLength=abs(seasonLength_results - actual_results)
+                    ),
                     
          decreasing=F)
 }
@@ -179,7 +269,7 @@ testSuite = function(expected,name,number)
   print(paste("Test suite ",number,":",sep=''));
   for (i in 1:n)
   {
-    result = testTrueSeasonLength(paste(name,i,sep='',collapse = ' '));
+    result = testSazed(paste(name,i,sep='',collapse = ' '));
     results[i] = result;
     if ((result >= (expected[i]*0.8))  && (result <= (expected[i]*1.2)))
     {
@@ -211,7 +301,7 @@ testMultiple = function(expected,name,number)
   print(paste("Test suite ",number,":",sep=''));
   for (i in 1:n)
   {
-    result = testTrueSeasonLength(paste(name,i,sep='',collapse = ' '));
+    result = testSazed(paste(name,i,sep='',collapse = ' '));
     results[i] = result;
     for (j in 1:ncol(expected))
     {

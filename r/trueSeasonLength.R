@@ -117,9 +117,12 @@ azed = function(y, harmonic_analysis = FALSE, zero_discard=FALSE,skew_correction
   
   
   #plot(zero_matrix);
-  #plot(d);
-  
-  return(dens);
+  #plot(dens,main = '',xlab = 'Zero Distance',ylab = 'Density');
+  if (!is.list(dens) && is.nan(dens))
+  {
+    return(1);
+  }
+  return(round(dens$x[which.max(dens$y)]*2));
 }
 
 trueSeasonLength = function(y){
@@ -172,14 +175,11 @@ trueSeasonLength = function(y){
   {
     y = findAndFilter(y,cutoff);
   }
-  dens = azed(y);
-  if (!is.list(dens) && is.nan(dens))
+  result2 = azed(y);
+  if (is.na(result2))
   {
     return(1);
   }
-  
-  result2 = round(dens$x[which.max(dens$y)]*2);
-  
   
   
   #-------------------------------------
