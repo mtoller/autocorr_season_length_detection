@@ -1,4 +1,4 @@
-sazed = function(y)
+sazed1 = function(y)
 {
   library(signal);
   library(forecast);
@@ -91,8 +91,10 @@ S = function(y,preprocess=TRUE)
   {
     welch = welchPSD(as.ts(y),n);
   }
+  #multitap = spec.mtm(as.ts(y),plot = FALSE)
   period1 = round(1/(periodigram$freq[which.max(periodigram$spec)]))
   period2 = round(1/(welch$frequency[which.max(welch$power)]))
+  #period2 = round(1/multitap$freq[which.max(multitap$spec)])
   
   return(round((period1+period2)/2));
   
@@ -110,21 +112,19 @@ zed = function(y,preprocess=TRUE)
     y = preprocessTs(y);
   }
   n = length(y);
-  
   signs = y;
   signs[which(signs < 0)] = -1;
   signs[which(signs > 0)] = 1;
   
-  zero_distance_raw = which(signs[2:n] + signs[1:(n-1)] == 0);
+  zero_distance_raw = which(signs[2:n] + signs[1:(n-1)] < 2 & signs[2:n] + signs[1:(n-1)] > -2);
   interpolation = y[zero_distance_raw] / (-1*(y[zero_distance_raw+1]-y[zero_distance_raw]));
   zero_distance_exact = zero_distance_raw+interpolation;
-  z_to_z = sort(zero_distance_exact[2:n]-zero_distance_exact[1:(n-1)]);
-  
+  z_to_z = diff(zero_distance_exact)
+  #print(z_to_z)
   if (length(z_to_z) < 2)
   {
     return(1);
   }
-  
   dens = density(z_to_z,kernel = 'epanechnikov')
   #zero_matrix = matrix(0,length(z_to_z),2);
   #zero_matrix[,1] = z_to_z;
@@ -134,8 +134,17 @@ zed = function(y,preprocess=TRUE)
   {
     return(1);
   }
+  #plot(dens)
+
   return(round(dens$x[which.max(dens$y)]*2));
   #return(round(median(dens$x))*2)
+}
+
+aze = function(y,preprocess=TRUE)
+{
+  if (preprocess)
+    y = preprocessTs(y);
+  return(ze(computeAcf(y),FALSE));
 }
 
 ze = function(y,preprocess=TRUE)
@@ -150,10 +159,11 @@ ze = function(y,preprocess=TRUE)
   signs[which(signs < 0)] = -1;
   signs[which(signs > 0)] = 1;
   
-  zero_distance_raw = which(signs[2:n] + signs[1:(n-1)] == 0);
+  zero_distance_raw = which(signs[2:n] + signs[1:(n-1)] < 2 & signs[2:n] + signs[1:(n-1)] > -2);
   interpolation = y[zero_distance_raw] / (-1*(y[zero_distance_raw+1]-y[zero_distance_raw]));
   zeros = zero_distance_raw+interpolation;
-  return(round(mean(diff(round(zeros))))*2);
+  
+  return(round(mean(diff(zeros)))*2);
 }
 computeAcf = function(y)
 {
@@ -218,8 +228,12 @@ sfs = function(y, preprocess=TRUE, depth = 1)
   }
   return(sfs(y,FALSE,depth = depth+1));
 }
-ensemble = function(y)
+sazed2 <- function(y)
 {
+  library(signal);
+  library(forecast);
+  library(pracma);
+  library(bspec);
   if (anyNA(y))
   {
     print('NA is not supported')
@@ -239,16 +253,64 @@ ensemble = function(y)
   results = c(results,S(y));
   results = c(results,Sa(y));
   results = c(results,ze(y));
+  results = c(results,aze(y));
   results = c(results,zed(y));
   results = c(results,azed(y));
-  results = c(results,sazed(y));
-  results = c(results,fazed(y));
-  results = c(results,sfs(y));
-  results = c(results,findfrequency(y));
-  results = c(results,find.freq(y));
+  #results = c(results,callSeasonLength(y));
+  #results = c(results,results[6]);
+  #results = c(results,sazed(y));
+  #results = c(results,fazed(y));
+  #results = c(results,sfs(y));
+  #results = c(results,findfrequency(y));
+  #results = c(results,results[7]);
+  #results = c(results,find.freq(y));
   #sanity check?
   #means of seasons must equal mean of detrended time series
   #write list of constants
+  
+  results = results[which(!is.infinite(results))];
+  results = results[which(!is.na(results))];
+  if (var(results) == 0)
+  {
+    return(results[1]);
+  }
   unique_results = unique(results);
-  return(unique_results[which.max(tabulate(match(results,unique_results)))]);
+  unique_results = unique_results[which(unique_results != 2)];
+  unique_results = unique_results[which(!is.infinite(unique_results))];
+  tab = tabulate(match(results,unique_results));
+  if (max(tab) == 1)
+  {
+    
+    #dens = density(results,kernel = 'epanechnikov')
+    #return(round(dens$x[which.max(dens$y)]));
+    return(ensemble(diff(y,lag = 2)));
+    #return(round(max(kmeans(results,c(min(results),max(results)))$centers)))
+    
+  }
+  else if (length(tab[which(tab == max(tab))]) > 1)
+  {
+    #print(tab);
+    #print(results);
+    sorted = sort(unique_results,decreasing = TRUE)
+    #print(sorted[which.max(tabulate(match(sort(results,decreasing = TRUE),sorted)))]);
+    return(sorted[which.max(tabulate(match(sort(results,decreasing = TRUE),sorted)))]);
+  }
+
+  vote = unique_results[which.max(tabulate(match(results,unique_results)))];
+  return(vote);
+  
+  #check1
+  #for (result1 in unique_results)
+  #{
+  #  for (result2 in unique_results)
+  #  {
+  #    if (result1 == result2)
+  #      next;
+  #    if (mod(result1,result2) == 0 & vote==result2 & result1 < median(results))
+  #    {
+  #      cat(paste0("Result1: ",result1, " result2: ",result2, " mode: ",vote," median: ",median(results),"\n"));
+  #      vote = result1;
+  #    }
+  #  }
+  #}
 }

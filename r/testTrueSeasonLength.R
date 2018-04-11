@@ -33,8 +33,8 @@ compareMethods = function(y)
   cat(paste0('Method3: ze->',ze(y),'\n'));
   cat(paste0('Method4: zed->',zed(y),'\n'));
   cat(paste0('Method5: azed->',azed(y),'\n'));
-  cat(paste0('Method6: sazed->',sazed(y),'\n'));
-  cat(paste0('Method7: fazed->',fazed(y),'\n'));
+  cat(paste0('Method6: sazed1->',sazed1(y),'\n'));
+  cat(paste0('Method7: aze->',aze(y),'\n'));
   cat(paste0('Method8: sfs->',sfs(y),'\n'));
   cat(paste0('Method9: findfrequency->',findfrequency(y),'\n'));
   cat(paste0('Method10: find.freq->',find.freq(y),'\n'));
@@ -83,17 +83,24 @@ testTrueSeasonLength = function(datafile){
 testSazed = function(datafile){
   #print(datafile);
   source('sazed.R');
-  y = read.table(datafile);
-  if (length(y) == 2)
+  if (is.character(datafile))
   {
-    y = y[2];
+    y = read.table(datafile);
+    if (length(y) == 2)
+    {
+      y = y[2];
+    }
+    else
+    {
+      y = y[1];
+    }  
+    y = as.ts(y);
   }
   else
   {
-    y = y[1];
-  }  
-  y = as.ts(y);
-  return(sazed(y));
+    y = as.ts(as.vector(datafile));
+  }
+  return(sazed2(y));
 }
 
 
@@ -122,10 +129,10 @@ testPublicDatasets <- function()
   ze_results = c()
   zed_results = c()
   azed_results = c()
-  fazed_results = c()
-  sazed_results = c()
+  aze_results = c()
+  sazed1_results = c()
   sfs_results = c()
-  ensemble_results = c()
+  sazed2_results = c()
   #seasonLength_results = c()
   #install.packages(c("fma", "expsmooth", "fpp2", "TSA", "astsa", "AER"))
   source('trueSeasonLength.R')
@@ -147,10 +154,10 @@ testPublicDatasets <- function()
       ze_results = c(ze_results,ze(ts_data_nofreq))
       zed_results = c(zed_results,zed(ts_data_nofreq))
       azed_results = c(azed_results,azed(ts_data_nofreq))
-      fazed_results = c(fazed_results,fazed(ts_data_nofreq))
-      sazed_results = c(sazed_results,sazed(ts_data_nofreq))
+      aze_results = c(aze_results,aze(ts_data_nofreq))
+      sazed1_results = c(sazed1_results,sazed1(ts_data_nofreq))
       sfs_results = c(sfs_results,sfs(ts_data_nofreq))
-      ensemble_results = c(ensemble_results,ensemble(ts_data_nofreq))
+      sazed2_results = c(sazed2_results,sazed2(ts_data_nofreq))
       #seasonLength_results = c(seasonLength_results,callSeasonLength(ts_data_nofreq))
     }
   }
@@ -169,13 +176,13 @@ testPublicDatasets <- function()
              ' out of ', number_public_datasets, '\n'))
   cat(paste0('azed passes ', length(which(azed_results == actual_results)), 
              ' out of ', number_public_datasets, '\n'))
-  cat(paste0('fazed passes ', length(which(fazed_results == actual_results)), 
+  cat(paste0('aze passes ', length(which(aze_results == actual_results)), 
              ' out of ', number_public_datasets, '\n'))
-  cat(paste0('sazed passes ', length(which(sazed_results == actual_results)), 
+  cat(paste0('sazed1 passes ', length(which(sazed1_results == actual_results)), 
              ' out of ', number_public_datasets, '\n'))
   cat(paste0('sfs passes ', length(which(sfs_results == actual_results)), 
              ' out of ', number_public_datasets, '\n'))
-  cat(paste0('ensemble passes ', length(which(ensemble_results == actual_results)), 
+  cat(paste0('sazed2 passes ', length(which(sazed2_results == actual_results)), 
              ' out of ', number_public_datasets, '\n'))
   #cat(paste0('seasonLength passes ', length(which(seasonLength_results == actual_results)), 
   #           ' out of ', number_public_datasets, '\n'))
@@ -192,10 +199,10 @@ testPublicDatasets <- function()
                     ze=abs(ze_results - actual_results),
                     zed=abs(zed_results - actual_results),
                     azed=abs(azed_results - actual_results),
-                    fazed=abs(fazed_results - actual_results),
-                    sazed=abs(sazed_results - actual_results),
+                    aze=abs(aze_results - actual_results),
+                    #sazed1=abs(sazed1_results - actual_results),
                     sfs=abs(sfs_results - actual_results),
-                    ensemble=abs(ensemble_results - actual_results)
+                    sazed2=abs(sazed2_results - actual_results)
                     #seasonLength=abs(seasonLength_results - actual_results)
                     ),
                     
@@ -305,7 +312,7 @@ testMultiple = function(expected,name,number)
     results[i] = result;
     for (j in 1:ncol(expected))
     {
-      if ((result >= (expected[i,j]*0.8))  && (result <= (expected[i,j]*1.2)))
+      if ((result >= (expected[i,j]*1.0))  && (result <= (expected[i,j]*1.0)))
       {
         passed = passed + 1;
         bin[i] = 1;
