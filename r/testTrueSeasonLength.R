@@ -312,7 +312,7 @@ testMultiple = function(expected,name,number)
     results[i] = result;
     for (j in 1:ncol(expected))
     {
-      if ((result >= (expected[i,j]*1.0))  && (result <= (expected[i,j]*1.0)))
+      if ((result >= (expected[i,j]*0.8))  && (result <= (expected[i,j]*1.2)))
       {
         passed = passed + 1;
         bin[i] = 1;

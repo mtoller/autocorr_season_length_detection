@@ -283,7 +283,8 @@ sazed2 <- function(y)
     
     #dens = density(results,kernel = 'epanechnikov')
     #return(round(dens$x[which.max(dens$y)]));
-    return(ensemble(diff(y,lag = 2)));
+    #return(ensemble(diff(y,lag = 2)));
+    return(2*ensemble(downsample(y,2)));
     #return(round(max(kmeans(results,c(min(results),max(results)))$centers)))
     
   }
@@ -313,4 +314,18 @@ sazed2 <- function(y)
   #    }
   #  }
   #}
+}
+
+downsample = function(data, window_size)
+{
+  n = length(data);
+  result = c();
+  i = 0;
+  while (i < n)
+  {
+    i = i + window_size;
+    
+    result = c(result,mean(data[(i-window_size):i]));
+  }
+  return(as.ts(result[which(!is.na(result))]));
 }
