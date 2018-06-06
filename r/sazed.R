@@ -76,20 +76,23 @@ Sa = function(y,preprocess=TRUE)
 }
 S = function(y,preprocess=TRUE)
 {
+  if (length(y) < 6)
+  {
+    return(1);
+  }
   if (preprocess)
   {
     y = preprocessTs(y);
   }
   n = length(y);
   periodigram = spec.pgram(y,detrend=FALSE,plot = FALSE);
-  
-  if (round(n*2/pi) >= 4)
+  if (n >= 6)
   {
-    welch = welchPSD(as.ts(y),round(n*2/pi));
+    welch = welchPSD(as.ts(y),round(n*2/pi),windowfun = welchwindow);
   }
   else
   {
-    welch = welchPSD(as.ts(y),n);
+    welch = welchPSD(as.ts(y),n,windowfun = welchwindow);
   }
   #multitap = spec.mtm(as.ts(y),plot = FALSE)
   period1 = round(1/(periodigram$freq[which.max(periodigram$spec)]))
@@ -228,7 +231,7 @@ sfs = function(y, preprocess=TRUE, depth = 1)
   }
   return(sfs(y,FALSE,depth = depth+1));
 }
-sazed2 <- function(y)
+sazed2 <- function(y,iter=0)
 {
   library(signal);
   library(forecast);
@@ -249,6 +252,7 @@ sazed2 <- function(y)
     print('y has no variance');
     return(1);
   }
+
   results = c();
   results = c(results,S(y));
   results = c(results,Sa(y));
@@ -267,7 +271,7 @@ sazed2 <- function(y)
   #sanity check?
   #means of seasons must equal mean of detrended time series
   #write list of constants
-  
+  print(results)
   results = results[which(!is.infinite(results))];
   results = results[which(!is.na(results))];
   if (var(results) == 0)
@@ -280,11 +284,16 @@ sazed2 <- function(y)
   tab = tabulate(match(results,unique_results));
   if (max(tab) == 1)
   {
-    
+    iter = iter + 1;
     #dens = density(results,kernel = 'epanechnikov')
+    if (mod(iter,2) == 1)
+    {
+      return(2*sazed2(downsample(y,2),iter));
+    }
+    return(sazed2(diff(y,lag = 2),iter));
     #return(round(dens$x[which.max(dens$y)]));
-    #return(ensemble(diff(y,lag = 2)));
-    return(2*ensemble(downsample(y,2)));
+    #return(sazed2(2*downsample(diff(y,lag = 2),2)));
+    #return(2*sazed2(downsample(y,2)));
     #return(round(max(kmeans(results,c(min(results),max(results)))$centers)))
     
   }
@@ -316,16 +325,15 @@ sazed2 <- function(y)
   #}
 }
 
-downsample = function(data, window_size)
+downsample = function(data, window_size=2)
 {
   n = length(data);
   result = c();
-  i = 0;
+  i = 1;
   while (i < n)
   {
-    i = i + window_size;
-    
-    result = c(result,mean(data[(i-window_size):i]));
+    result = c(result,mean(data[i:(i+window_size-1)]));
+    i = i+window_size;
   }
   return(as.ts(result[which(!is.na(result))]));
 }
