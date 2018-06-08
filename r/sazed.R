@@ -327,13 +327,15 @@ sazed2 <- function(y,iter=0)
 
 downsample = function(data, window_size=2)
 {
-  n = length(data);
-  result = c();
-  i = 1;
-  while (i < n)
-  {
-    result = c(result,mean(data[i:(i+window_size-1)]));
-    i = i+window_size;
-  }
-  return(as.ts(result[which(!is.na(result))]));
+  library(zoo);
+  return(ts(as.ts(rollapply(zoo(data),width=2,by=2,FUN=mean)),frequency=1))
+  #n = length(data);
+  #result = c();
+  #i = 1;
+  #while (i < n)
+  #{
+  #  result = c(result,mean(data[i:(i+window_size-1)]));
+  #  i = i+window_size;
+  #}
+  #return(as.ts(result[which(!is.na(result))]));
 }
