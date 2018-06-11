@@ -100,11 +100,20 @@ testSazed = function(datafile){
   {
     y = as.ts(as.vector(datafile));
   }
-  return(sazed2(y));
+  r = tryCatch(
+    {
+      r = sazed(y);
+    },
+    error = function(cond)
+    {
+      r = 1;
+    }
+  )
+  return(r);
 }
 
 
-testPublicDatasets <- function()
+testPublicDatasets <- function(tolerance = 0)
 {
   
   public_datasets <- list()
@@ -124,16 +133,15 @@ testPublicDatasets <- function()
   actual_results <- c()
   findfreq_basic_results <- c()
   findfreq_advanced_results <- c()
+  seasonLength_results = c()
   s_results = c()
   sa_results = c()
   ze_results = c()
   zed_results = c()
   azed_results = c()
   aze_results = c()
-  sazed1_results = c()
-  sfs_results = c()
-  sazed2_results = c()
-  #seasonLength_results = c()
+  sazed_results = c()
+  
   #install.packages(c("fma", "expsmooth", "fpp2", "TSA", "astsa", "AER"))
   source('trueSeasonLength.R')
   source('baselines.R')
@@ -149,43 +157,44 @@ testPublicDatasets <- function()
       actual_results <- c(actual_results, frequency(ts_data))
       findfreq_basic_results <- c(findfreq_basic_results, find.freq(ts_data_nofreq))
       findfreq_advanced_results <- c(findfreq_advanced_results, findfrequency(ts_data_nofreq))
+      seasonLength_results = c(seasonLength_results,0)#callSeasonLength(ts_data_nofreq))
       s_results = c(s_results,S(ts_data_nofreq))
       sa_results = c(sa_results,Sa(ts_data_nofreq))
       ze_results = c(ze_results,ze(ts_data_nofreq))
       zed_results = c(zed_results,zed(ts_data_nofreq))
       azed_results = c(azed_results,azed(ts_data_nofreq))
       aze_results = c(aze_results,aze(ts_data_nofreq))
-      sazed1_results = c(sazed1_results,sazed1(ts_data_nofreq))
-      sfs_results = c(sfs_results,sfs(ts_data_nofreq))
-      sazed2_results = c(sazed2_results,sazed2(ts_data_nofreq))
-      #seasonLength_results = c(seasonLength_results,callSeasonLength(ts_data_nofreq))
+      #sazed1_results = c(sazed1_results,sazed1(ts_data_nofreq))
+      #sfs_results = c(sfs_results,sfs(ts_data_nofreq))
+      sazed_results = c(sazed_results,sazed(ts_data_nofreq))
+      
     }
   }
   #Accuracy
-  cat(paste0('find.freq passes ', length(which(findfreq_basic_results == actual_results)), 
+  cat(paste0('find.freq passes ', evaluateTolerance(findfreq_basic_results,actual_results,tolerance), 
              ' out of ', number_public_datasets, '\n'))
-  cat(paste0('findfrequency passes ', length(which(findfreq_advanced_results == actual_results)), 
+  cat(paste0('findfrequency passes ', evaluateTolerance(findfreq_advanced_results,actual_results,tolerance), 
              ' out of ', number_public_datasets, '\n'))
-  cat(paste0('s passes ', length(which(s_results == actual_results)), 
+  cat(paste0('seasonLength passes ', evaluateTolerance(seasonLength_results,actual_results,tolerance), 
              ' out of ', number_public_datasets, '\n'))
-  cat(paste0('sa passes ', length(which(sa_results == actual_results)), 
+  cat(paste0('s passes ', evaluateTolerance(s_results,actual_results,tolerance), 
              ' out of ', number_public_datasets, '\n'))
-  cat(paste0('ze passes ', length(which(ze_results == actual_results)), 
+  cat(paste0('sa passes ', evaluateTolerance(sa_results,actual_results,tolerance), 
              ' out of ', number_public_datasets, '\n'))
-  cat(paste0('zed passes ', length(which(zed_results == actual_results)), 
+  cat(paste0('ze passes ', evaluateTolerance(ze_results,actual_results,tolerance), 
              ' out of ', number_public_datasets, '\n'))
-  cat(paste0('azed passes ', length(which(azed_results == actual_results)), 
+  cat(paste0('aze passes ', evaluateTolerance(aze_results,actual_results,tolerance), 
              ' out of ', number_public_datasets, '\n'))
-  cat(paste0('aze passes ', length(which(aze_results == actual_results)), 
+  cat(paste0('zed passes ', evaluateTolerance(zed_results,actual_results,tolerance), 
              ' out of ', number_public_datasets, '\n'))
-  cat(paste0('sazed1 passes ', length(which(sazed1_results == actual_results)), 
+  cat(paste0('azed passes ', evaluateTolerance(azed_results,actual_results,tolerance), 
              ' out of ', number_public_datasets, '\n'))
-  cat(paste0('sfs passes ', length(which(sfs_results == actual_results)), 
-             ' out of ', number_public_datasets, '\n'))
-  cat(paste0('sazed2 passes ', length(which(sazed2_results == actual_results)), 
-             ' out of ', number_public_datasets, '\n'))
-  #cat(paste0('seasonLength passes ', length(which(seasonLength_results == actual_results)), 
+  #cat(paste0('sazed1 passes ', length(which(sazed1_results == actual_results)), 
   #           ' out of ', number_public_datasets, '\n'))
+  #cat(paste0('sfs passes ', length(which(sfs_results == actual_results)), 
+  #           ' out of ', number_public_datasets, '\n'))
+  cat(paste0('sazed passes ', evaluateTolerance(sazed_results,actual_results,tolerance), 
+             ' out of ', number_public_datasets, '\n'))
   #Friedman Rank Test - best algorithm is the one with lowest distance to actual_results (hence decreasing=F)
   #if (!require("devtools")) {
   #  install.packages("devtools")
@@ -194,29 +203,28 @@ testPublicDatasets <- function()
   library(scmamp)
   plotCD(data.frame(hynd_basic=abs(findfreq_basic_results - actual_results), 
                     hynd_advanc=abs(findfreq_advanced_results - actual_results),
+                    seasonLength=abs(seasonLength_results - actual_results),
                     s=abs(s_results - actual_results),
                     sa=abs(sa_results - actual_results),
                     ze=abs(ze_results - actual_results),
                     zed=abs(zed_results - actual_results),
                     azed=abs(azed_results - actual_results),
                     aze=abs(aze_results - actual_results),
-                    #sazed1=abs(sazed1_results - actual_results),
-                    sfs=abs(sfs_results - actual_results),
-                    sazed2=abs(sazed2_results - actual_results)
-                    #seasonLength=abs(seasonLength_results - actual_results)
+                    sazed=abs(sazed_results - actual_results)
+                    
                     ),
                     
          decreasing=F)
 }
 
-testAll = function()
+testAll = function(func,deviation)
 {
   sum = 0;
   expected = c(88,57,3,6,5,25,214,900,10,1000,20,15,190,107,52,1000,20,35,50000,3);
-  sum = sum + testSuite(expected,"../test1/t",1);
+  sum = sum + testSuite(func,expected,"../test1/t",1,deviation);
   
   expected = c(10000,10,96,120,19,180,1332,45,19,20,140,18,30,1500,740,20,1590,10,29,5);
-  sum = sum + testSuite(expected,"../test2/t",2);
+  sum = sum + testSuite(func,expected,"../test2/t",2,deviation);
   
   expected = matrix(
     c(20,60,-1,
@@ -241,33 +249,33 @@ testAll = function()
       500,1400,2000)
     ,nrow = 3,ncol = 20);
   expected = t(expected);
-  sum = sum + testMultiple(expected,"../test3/t",3);
+  sum = sum + testMultiple(func,expected,"../test3/t",3,deviation);
   
   expected = c(128,128,128,128,128,156,156,156,156,156,37,37,37,37,37,8,8,8,8,8);
-  sum = sum + testSuite(expected,"../test4/t",4);
+  sum = sum + testSuite(func,expected,"../test4/t",4,deviation);
 
   expected = c(155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155,155);
-  sum = sum + testSuite(expected,"../test5/t",5);
+  sum = sum + testSuite(func,expected,"../test5/t",5,deviation);
   
   expected = c(4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768,65536);
-  sum = sum + testSuite(expected,"../test6/t",6);
+  sum = sum + testSuite(func,expected,"../test6/t",6,deviation);
 
   expected = c(1,1,1,1,1,1,1,1,1,1)
-  sum = sum + testSuite(expected,"../test7/t",7);
+  sum = sum + testSuite(func,expected,"../test7/t",7,deviation);
   
   expected = c(12,12,12,4,12,6,6,6,12,6,4,12,12,12,12,12,3,3,12,12)
-  sum = sum + testSuite(expected,"../testR/t",8);
+  sum = sum + testSuite(func,expected,"../testR/t",8,deviation);
   
   expected = c(12,12,12,12,12,12,12,130,12,12,12,12,12,12,130,12,12,12,12,12)
-  sum = sum + testSuite(expected,"../testC/t",9);
+  sum = sum + testSuite(func,expected,"../testC/t",9,deviation);
   
-  print(paste('Total: ', sum, ' out of 165',sep=''));
+  print(paste('Total: ', sum, '/165, ',sum/165,sep=''));
   print('original seasonLength passes 122');
   print('findFrequency passes 83');
 }
 
 
-testSuite = function(expected,name,number)
+testSuite = function(func,expected,name,number,deviation)
 {
   n = length(expected);
   passed = 0;
@@ -276,9 +284,9 @@ testSuite = function(expected,name,number)
   print(paste("Test suite ",number,":",sep=''));
   for (i in 1:n)
   {
-    result = testSazed(paste(name,i,sep='',collapse = ' '));
+    result = func(paste(name,i,sep='',collapse = ' '));
     results[i] = result;
-    if ((result >= (expected[i]*0.8))  && (result <= (expected[i]*1.2)))
+    if ((result >= (expected[i]*(1-deviation))  && (result <= (expected[i]*(1+deviation)))))
     {
       passed = passed + 1;
       bin[i] = 1;
@@ -289,7 +297,7 @@ testSuite = function(expected,name,number)
     }
   }
   
-  print(paste(passed," out of ",n,sep='',collapse = ' '));
+  print(paste(passed,"/",n,sep='',collapse = ' '));
   print(t(matrix(c(bin,results,expected),nrow=n,ncol=3)));
   #print(paste(c("Passed:   ",bin),sep='',collapse = ' '));
   #print(paste(c("Results:  ",results),sep='',collapse = ' '));
@@ -298,7 +306,7 @@ testSuite = function(expected,name,number)
   return(passed);
 }
 
-testMultiple = function(expected,name,number)
+testMultiple = function(func,expected,name,number,deviation)
 {
   n = nrow(expected);
   passed = 0;
@@ -308,11 +316,11 @@ testMultiple = function(expected,name,number)
   print(paste("Test suite ",number,":",sep=''));
   for (i in 1:n)
   {
-    result = testSazed(paste(name,i,sep='',collapse = ' '));
+    result = func(paste(name,i,sep='',collapse = ' '));
     results[i] = result;
     for (j in 1:ncol(expected))
     {
-      if ((result >= (expected[i,j]*0.8))  && (result <= (expected[i,j]*1.2)))
+      if ((result >= (expected[i,j]*(1-deviation)))  && (result <= (expected[i,j]*(1+deviation))))
       {
         passed = passed + 1;
         bin[i] = 1;
@@ -327,7 +335,7 @@ testMultiple = function(expected,name,number)
     }
   }
   solution = (cbind(c(1:n),c(solution)));
-  print(paste(passed," out of ",n,sep='',collapse = ' '));
+  print(paste(passed,"/",n,sep='',collapse = ' '));
   print(t(matrix(c(bin,results,expected[solution]),nrow=n,ncol=3)));
   #print(paste(c("Passed:   ",bin),sep='',collapse = ' '));
   #print(paste(c("Results:  ",results),sep='',collapse = ' '));
@@ -356,4 +364,8 @@ testNew = function(y)
   cat(paste0('Expected: ', frequency(y),'\n'));
   plot(y)
   return(newSeasonLength(y));
+}
+evaluateTolerance = function(a,b,tolerance)
+{
+  return(length(which(a >= b*(1-tolerance) & a <= b*(1+tolerance))))
 }

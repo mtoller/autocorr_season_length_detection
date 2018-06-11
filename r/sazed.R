@@ -1,4 +1,4 @@
-sazed1 = function(y)
+sazed_old = function(y)
 {
   library(signal);
   library(forecast);
@@ -166,7 +166,14 @@ ze = function(y,preprocess=TRUE)
   interpolation = y[zero_distance_raw] / (-1*(y[zero_distance_raw+1]-y[zero_distance_raw]));
   zeros = zero_distance_raw+interpolation;
   
-  return(round(mean(diff(zeros)))*2);
+  #return(round(mean(diff(zeros)))*2);
+  result = round(mean(diff(zeros)))*2;
+  if (is.numeric(result) & is.finite(result))
+  {
+    return(result);
+  }
+  return(0);
+  
 }
 computeAcf = function(y)
 {
@@ -231,7 +238,7 @@ sfs = function(y, preprocess=TRUE, depth = 1)
   }
   return(sfs(y,FALSE,depth = depth+1));
 }
-sazed2 <- function(y,iter=0)
+sazed <- function(y,iter=0,method="down")
 {
   library(signal);
   library(forecast);
@@ -284,16 +291,26 @@ sazed2 <- function(y,iter=0)
   tab = tabulate(match(results,unique_results));
   if (max(tab) == 1)
   {
+    if (method=="down")
+    {
+      return(2*sazed(downsample(y,2)));
+    }
+      
+    else if(method=="diff")
+    {
+      return(sazed(diff(y,lag = 1),iter));
+    }
+    
     iter = iter + 1;
     #dens = density(results,kernel = 'epanechnikov')
     if (mod(iter,2) == 1)
     {
-      return(2*sazed2(downsample(y,2),iter));
+      return(2*sazed(downsample(y,2),iter));
     }
-    return(sazed2(diff(y,lag = 2),iter));
+    return(sazed(diff(y,lag = 1),iter));
     #return(round(dens$x[which.max(dens$y)]));
-    #return(sazed2(2*downsample(diff(y,lag = 2),2)));
-    #return(2*sazed2(downsample(y,2)));
+    #return(2*sazed(downsample(diff(y,lag = 1),2)));
+    
     #return(round(max(kmeans(results,c(min(results),max(results)))$centers)))
     
   }
