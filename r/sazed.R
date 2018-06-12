@@ -238,7 +238,7 @@ sfs = function(y, preprocess=TRUE, depth = 1)
   }
   return(sfs(y,FALSE,depth = depth+1));
 }
-sazed <- function(y,iter=0,method="down")
+sazed <- function(y,iter=0,method="alt")
 {
   library(signal);
   library(forecast);
@@ -278,7 +278,7 @@ sazed <- function(y,iter=0,method="down")
   #sanity check?
   #means of seasons must equal mean of detrended time series
   #write list of constants
-  print(results)
+  #print(results)
   results = results[which(!is.infinite(results))];
   results = results[which(!is.na(results))];
   if (var(results) == 0)
@@ -293,12 +293,12 @@ sazed <- function(y,iter=0,method="down")
   {
     if (method=="down")
     {
-      return(2*sazed(downsample(y,2)));
+      return(2*sazed(downsample(y,2),method = "down"));
     }
       
     else if(method=="diff")
     {
-      return(sazed(diff(y,lag = 1),iter));
+      return(sazed(diff(y,lag = 1),method = "diff"));
     }
     
     iter = iter + 1;
@@ -307,7 +307,7 @@ sazed <- function(y,iter=0,method="down")
     {
       return(2*sazed(downsample(y,2),iter));
     }
-    return(sazed(diff(y,lag = 1),iter));
+    return(sazed(diff(y,lag = 1),iter,method="alt"));
     #return(round(dens$x[which.max(dens$y)]));
     #return(2*sazed(downsample(diff(y,lag = 1),2)));
     

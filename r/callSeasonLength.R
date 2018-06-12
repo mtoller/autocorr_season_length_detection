@@ -16,7 +16,7 @@ callSeasonLength = function(y)
   write(y,file = 'temp',ncolumns = 1);
   system('cd ../matlab;octave --silent --no-gui --eval "callSeasonLength()"');
   system('cd ../r');
-  result = read.ts('temp')[1]
+  result = as.numeric(read.table('temp')[1])
   if (result == 0)
   {
     result = 1;

@@ -93,7 +93,7 @@ testSazed = function(datafile){
     else
     {
       y = y[1];
-    }  
+    }
     y = as.ts(y);
   }
   else
@@ -102,7 +102,7 @@ testSazed = function(datafile){
   }
   r = tryCatch(
     {
-      r = sazed(y);
+      r = aze(y);
     },
     error = function(cond)
     {
@@ -131,7 +131,7 @@ testPublicDatasets <- function(tolerance = 0)
   number_public_datasets <- Reduce(sum, lapply(public_datasets, length))
   
   actual_results <- c()
-  findfreq_basic_results <- c()
+  #findfreq_basic_results <- c()
   findfreq_advanced_results <- c()
   seasonLength_results = c()
   s_results = c()
@@ -140,8 +140,9 @@ testPublicDatasets <- function(tolerance = 0)
   zed_results = c()
   azed_results = c()
   aze_results = c()
-  sazed_results = c()
-  
+  sazed_down_results = c()
+  sazed_diff_results = c()
+  sazed_alt_results = c()
   #install.packages(c("fma", "expsmooth", "fpp2", "TSA", "astsa", "AER"))
   source('trueSeasonLength.R')
   source('baselines.R')
@@ -155,9 +156,9 @@ testPublicDatasets <- function(tolerance = 0)
       ts_data <- get(a_dataset)
       ts_data_nofreq <- ts(as.vector(ts_data), frequency = 1)
       actual_results <- c(actual_results, frequency(ts_data))
-      findfreq_basic_results <- c(findfreq_basic_results, find.freq(ts_data_nofreq))
+      #findfreq_basic_results <- c(findfreq_basic_results, find.freq(ts_data_nofreq))
       findfreq_advanced_results <- c(findfreq_advanced_results, findfrequency(ts_data_nofreq))
-      seasonLength_results = c(seasonLength_results,0)#callSeasonLength(ts_data_nofreq))
+      seasonLength_results = c(seasonLength_results,callSeasonLength(ts_data_nofreq))
       s_results = c(s_results,S(ts_data_nofreq))
       sa_results = c(sa_results,Sa(ts_data_nofreq))
       ze_results = c(ze_results,ze(ts_data_nofreq))
@@ -166,13 +167,14 @@ testPublicDatasets <- function(tolerance = 0)
       aze_results = c(aze_results,aze(ts_data_nofreq))
       #sazed1_results = c(sazed1_results,sazed1(ts_data_nofreq))
       #sfs_results = c(sfs_results,sfs(ts_data_nofreq))
-      sazed_results = c(sazed_results,sazed(ts_data_nofreq))
-      
+      sazed_down_results = c(sazed_down_results,sazed(ts_data_nofreq,method = "down"))
+      sazed_diff_results = c(sazed_diff_results,sazed(ts_data_nofreq,method = "diff"))
+      sazed_alt_results = c(sazed_alt_results,sazed(ts_data_nofreq,method = "alt"))
     }
   }
   #Accuracy
-  cat(paste0('find.freq passes ', evaluateTolerance(findfreq_basic_results,actual_results,tolerance), 
-             ' out of ', number_public_datasets, '\n'))
+  #cat(paste0('find.freq passes ', evaluateTolerance(findfreq_basic_results,actual_results,tolerance), 
+             #' out of ', number_public_datasets, '\#n'))
   cat(paste0('findfrequency passes ', evaluateTolerance(findfreq_advanced_results,actual_results,tolerance), 
              ' out of ', number_public_datasets, '\n'))
   cat(paste0('seasonLength passes ', evaluateTolerance(seasonLength_results,actual_results,tolerance), 
@@ -193,7 +195,11 @@ testPublicDatasets <- function(tolerance = 0)
   #           ' out of ', number_public_datasets, '\n'))
   #cat(paste0('sfs passes ', length(which(sfs_results == actual_results)), 
   #           ' out of ', number_public_datasets, '\n'))
-  cat(paste0('sazed passes ', evaluateTolerance(sazed_results,actual_results,tolerance), 
+  cat(paste0('sazed_down passes ', evaluateTolerance(sazed_down_results,actual_results,tolerance), 
+             ' out of ', number_public_datasets, '\n'))
+  cat(paste0('sazed_diff passes ', evaluateTolerance(sazed_diff_results,actual_results,tolerance), 
+             ' out of ', number_public_datasets, '\n'))
+  cat(paste0('sazed_alt passes ', evaluateTolerance(sazed_alt_results,actual_results,tolerance), 
              ' out of ', number_public_datasets, '\n'))
   #Friedman Rank Test - best algorithm is the one with lowest distance to actual_results (hence decreasing=F)
   #if (!require("devtools")) {
@@ -201,8 +207,8 @@ testPublicDatasets <- function(tolerance = 0)
   #}
   #devtools::install_github("b0rxa/scmamp")
   library(scmamp)
-  plotCD(data.frame(hynd_basic=abs(findfreq_basic_results - actual_results), 
-                    hynd_advanc=abs(findfreq_advanced_results - actual_results),
+  plotCD(data.frame(#hynd_basic=abs(findfreq_basic_results - actual_results), 
+                    findFrequency=abs(findfreq_advanced_results - actual_results),
                     seasonLength=abs(seasonLength_results - actual_results),
                     s=abs(s_results - actual_results),
                     sa=abs(sa_results - actual_results),
@@ -210,8 +216,9 @@ testPublicDatasets <- function(tolerance = 0)
                     zed=abs(zed_results - actual_results),
                     azed=abs(azed_results - actual_results),
                     aze=abs(aze_results - actual_results),
-                    sazed=abs(sazed_results - actual_results)
-                    
+                    sazed_down=abs(sazed_down_results - actual_results),
+                    sazed_diff=abs(sazed_diff_results - actual_results),
+                    sazed_alt=abs(sazed_alt_results - actual_results)
                     ),
                     
          decreasing=F)
@@ -219,6 +226,7 @@ testPublicDatasets <- function(tolerance = 0)
 
 testAll = function(func,deviation)
 {
+  sazed_results <<- c()
   sum = 0;
   expected = c(88,57,3,6,5,25,214,900,10,1000,20,15,190,107,52,1000,20,35,50000,3);
   sum = sum + testSuite(func,expected,"../test1/t",1,deviation);
@@ -286,6 +294,7 @@ testSuite = function(func,expected,name,number,deviation)
   {
     result = func(paste(name,i,sep='',collapse = ' '));
     results[i] = result;
+    sazed_results <<- c(sazed_results ,abs(expected[i]-result))
     if ((result >= (expected[i]*(1-deviation))  && (result <= (expected[i]*(1+deviation)))))
     {
       passed = passed + 1;
@@ -333,6 +342,7 @@ testMultiple = function(func,expected,name,number,deviation)
         solution[i] = 1;
       }
     }
+    sazed_results <<- c(sazed_results,abs(expected[i,solution[i]]-result))
   }
   solution = (cbind(c(1:n),c(solution)));
   print(paste(passed,"/",n,sep='',collapse = ' '));
