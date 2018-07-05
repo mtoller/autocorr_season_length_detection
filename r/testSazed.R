@@ -1,17 +1,9 @@
-testSeasonLength <- function(datafile){
-  source('seasonLength.R')
-  y <- read.table(datafile)
-  if (length(y) == 2)
-  {
-    y <- y[2]
-  }
-  else
-  {
-    y <- y[1]
-  }  
-  y <- as.ts(y)
-  return(seasonLength(y))
-}
+#' Test Function for SAZED
+#' 
+#' \code{testSazed} loads a time series from a file and passes it as input to \code{sazed}.
+#'
+#' @param datafile system path to the file to be loaded.
+#' @return the season length estimated by \code{sazed}.
 testSazed <- function(datafile){
   #print(datafile)
   source('sazed.R')
@@ -44,6 +36,16 @@ testSazed <- function(datafile){
   )
   return(r);
 }
+#' Testing Public Datasets
+#' 
+#' \code{testPublicDatasets} loads time series from various R libraries and uses them to test
+#' different season length detectors.
+#'
+#' @param tolerance the allowed deviation between expected and actual result.
+#' @param testExternal if true, an external octave function will be tested as well.
+#' @examples 
+#' testPublicDatasets()
+#' testPublicDatasets(0.2)
 testPublicDatasets <- function(tolerance = 0,testExternal=F)
 {
   require(signal)
@@ -173,7 +175,15 @@ testPublicDatasets <- function(tolerance = 0,testExternal=F)
     decreasing=F,cex = 1)
   }
 }
-
+#' Testing the Diverse Dataset
+#' 
+#' \code{testDiverse} loads predefined local time series and tests its argument on them.
+#'
+#' @param func the function for reading and computing the season length of a time series.
+#' @param deviation the allowed deviation between expected and actual result.
+#' @examples 
+#' testDiverse(testSazed,0)
+#' testDiverse(callSeasonLength,0.2)
 testDiverse <- function(func,deviation)
 {
   
@@ -230,7 +240,19 @@ testDiverse <- function(func,deviation)
   print(paste('Total: ', sum, '/165, ',sum/165,sep=''))
 }
 
-
+#' Testing a Test Suite
+#' 
+#' \code{testSuite} is an internal function used inside testDiverse.
+#'
+#' @param func the function to be tested.
+#' @param expected a vector of expected results.
+#' @param name path to the test folder.
+#' @param number number of the test suite (used for printing only)
+#' @param deviation the allowed deviation between expected and actual result.
+#' @return the number of passed tests.
+#' @examples 
+#' expected <- c(88,57,3,6,5,25,214,900,10,1000,20,15,190,107,52,1000,20,35,50000,3)
+#' passed <- testSuite(func,expected,"../test1/t",1,deviation)
 testSuite <- function(func,expected,name,number,deviation)
 {
   n <- length(expected)
@@ -258,7 +280,42 @@ testSuite <- function(func,expected,name,number,deviation)
   print("")
   return(passed)
 }
-
+#' Testing a Test Suite with Multiple Possible Results
+#' 
+#' \code{testMultiple} is an internal function used inside testDiverse.
+#'
+#' @param func the function to be tested.
+#' @param expected a matrix of expected results, each column containing the possible results for a
+#' test
+#' @param name path to the test folder.
+#' @param number number of the test suite (used for printing only)
+#' @param deviation the allowed deviation between expected and actual result.
+#' @return the number of passed tests
+#' @examples 
+#' expected <- matrix(
+#' c(20,60,-1,
+#'  3,10,-1,
+#'  50,90,-1,
+#'  60,300,-1,
+#'  70,700,-1,
+#'  40,3498,-1,
+#'  8,32,-1,
+#'  40,75,-1,
+#'  400,1000,-1,
+#'  9,20,-1,
+#'  5,980,-1,
+#'  10,64,-1,
+#'  78,100,-1,
+#'  6,12,18,
+#'  3,7,-1,
+#'  9,24,-1,
+#'  7,70,700,
+#'  400,800,-1,
+#'  6,20,-1,
+#'  500,1400,2000)
+#' ,nrow = 3,ncol = 20)
+#' expected <- t(expected)
+#' testMultiple(func,expected,"../test3/t",3,deviation)
 testMultiple <- function(func,expected,name,number,deviation)
 {
   n <- nrow(expected)
@@ -293,6 +350,19 @@ testMultiple <- function(func,expected,name,number,deviation)
   print("")
   return(passed)
 }
+#' Evalutate Tolerance Deviation
+#' 
+#' \code{evaluateTolerance} checks if its arguments are in a tolerance range about each other. 
+#'
+#' @param a the vector of real values
+#' @param b the vector of expected values
+#' @param tolerance the accepted interval around \code{b} in which \code{a} may be
+#' @return the number of elements in \code{a} which are inside the tolerance interval around
+#' \code{b}
+#' @examples 
+#' a <- c(1,10,4,5,8,0)
+#' b <- c(1,9,12,6,7,-0.2)
+#' evaluateTolerance(a,b,0.5)
 evaluateTolerance <- function(a,b,tolerance)
 {
   return(length(which(a >= b*(1-tolerance) & a <= b*(1+tolerance))))

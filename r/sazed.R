@@ -1,9 +1,33 @@
+#' Compute the SA component of the SAZED ensemble
+#' 
+#' \code{Sa} computes the autocorrelation of its argument, and then derives the
+#' season length from its spectral density.
+#'
+#' @param y The input time series.
+#' @param preprocess If true, y is detrended and z-normalized before
+#'   computation.
+#' @return The SA season length estimate of y.
+#' @examples
+#' Sa(y)
+#' Sa(y, preprocess = F)
 Sa <- function(y,preprocess=T)
 {
   if (preprocess)
     y <- preprocessTs(y)
   return(S(computeAcf(y),F))
 }
+#' Compute the S component of the SAZED ensemble
+#' 
+#' \code{S} computes the spectral density of its argument, and then derives the
+#' season length from it.
+#'
+#' @param y The input time series.
+#' @param preprocess If true, y is detrended and z-normalized before
+#'   computation.
+#' @return The S season length estimate of y.
+#' @examples
+#' S(y)
+#' S(y, preprocess = F)
 S <- function(y,preprocess=T)
 {
   if (length(y) < 6)
@@ -30,12 +54,36 @@ S <- function(y,preprocess=T)
   return(round((period1+period2)/2))
   
 }
+#' Compute the AZED component of the SAZED ensemble
+#' 
+#' \code{azed} computes the autocorrelation of its argument, and then derives the
+#' season length from its the autocorrelations zero density.
+#'
+#' @param y The input time series.
+#' @param preprocess If true, y is detrended and z-normalized before
+#'   computation.
+#' @return The AZED season length estimate of y.
+#' @examples
+#' azed(y)
+#' azed(y, preprocess = F)
 azed <- function(y,preprocess=T)
 {
   if (preprocess)
     y <- preprocessTs(y)
   return(zed(computeAcf(y),F));
 }
+#' Compute the ZED component of the SAZED ensemble
+#' 
+#' \code{zed} computes the zero density of its argument, and then derives the
+#' season length from it.
+#'
+#' @param y The input time series.
+#' @param preprocess If true, y is detrended and z-normalized before
+#'   computation.
+#' @return The ZED season length estimate of y.
+#' @examples
+#' zed(y)
+#' zed(y, preprocess = F)
 zed <- function(y,preprocess=T)
 {
   if (preprocess)
@@ -65,14 +113,35 @@ zed <- function(y,preprocess=T)
 
   return(round(dens$x[which.max(dens$y)]*2))
 }
-
+#' Compute the AZE component of the SAZED ensemble
+#' 
+#' \code{aze} estimates the season length of its argument from the mean autocorrelation zero
+#' distance  
+#'
+#' @param y The input time series.
+#' @param preprocess If true, y is detrended and z-normalized before
+#'   computation.
+#' @return The AZE season length estimate of y.
+#' @examples
+#' aze(y)
+#' aze(y, preprocess = F)
 aze <- function(y,preprocess=T)
 {
   if (preprocess)
     y <- preprocessTs(y)
   return(ze(computeAcf(y),F))
 }
-
+#' Compute the ZE component of the SAZED ensemble
+#' 
+#' \code{ze} estimates the season length of its argument from the mean zero distance  
+#'
+#' @param y The input time series.
+#' @param preprocess If true, y is detrended and z-normalized before
+#'   computation.
+#' @return The ZE season length estimate of y.
+#' @examples
+#' ze(y)
+#' ze(y, preprocess = F)
 ze = function(y,preprocess=T)
 {
   if (preprocess)
@@ -97,6 +166,16 @@ ze = function(y,preprocess=T)
   return(0)
   
 }
+#' Compute and shorten autocorrelation
+#' 
+#' \code{computeAcf} computes the autocorrelation function of its argument and discards
+#' the zero lag and all lags greater than 2/3 of the argument's length
+#'
+#' @param y The input time series.
+#' 
+#' @return The shortened autocorrelation
+#' @examples
+#' computeAcf(y)
 computeAcf <- function(y)
 {
   autocorrelation <- as.ts(acf.fft(y))
@@ -104,12 +183,33 @@ computeAcf <- function(y)
   factor <- 2/3
   return(autocorrelation[1:round(length(autocorrelation)*factor)])
 }
+#' Preprocess Time Series for SAZED ensemble
+#' 
+#' \code{preprocessTs} detrends and z-normalizes its argument.
+#' 
+#' @param y The input time series.
+#' 
+#' @return The detrended and z-normalized time series.
+#' @examples
+#' preprocessTs(y)
 preprocessTs <- function(y)
 {
   return(scale(as.ts(detrend(as.vector(y)))))
 }
-
-
+#' SAZED Ensemble
+#' 
+#' \code{sazed} estimates a time series' season length by computing 6 different estimates
+#' and taking a majority vote.
+#'
+#' @param y The input time series.
+#' @param iter The recursion depth.
+#' @param method The method used for breaking ties. One of \code{c("alt","diff","down"}.
+#' 
+#' @return The season length of the input time series.
+#' @examples
+#' season_length <- 26
+#' y <- sin(1:400*2*pi/season_length)
+#' sazed(y)
 sazed <- function(y,iter=0,method="alt")
 {
   require(signal)
@@ -180,7 +280,13 @@ sazed <- function(y,iter=0,method="alt")
   vote = unique_results[which.max(tabulate(match(results,unique_results)))];
   return(vote);
 }
-
+#' Downsample Time Series
+#' 
+#' \code{downsample} samples down a time series with a rolling mean.
+#'
+#' @param y The input time series.
+#' @param window_size The size of the rolling mean window used.
+#' @return The downsampled time series.
 downsample = function(data, window_size=2)
 {
   require(zoo);
