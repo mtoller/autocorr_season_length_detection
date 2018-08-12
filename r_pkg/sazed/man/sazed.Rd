@@ -4,7 +4,6 @@
 \name{sazed}
 \alias{sazed}
 \alias{sazed-package}
-\alias{sazed}
 \title{sazed: A package for for estimating the season length of a seasonal
 time series.}
 \usage{

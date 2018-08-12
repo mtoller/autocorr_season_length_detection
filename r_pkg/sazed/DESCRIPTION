@@ -2,17 +2,17 @@ Package: sazed
 Type: Package
 Title: Parameter-Free Domain-Agnostic Season Length Detection in Time Series
 Version: 1.0.0
-Authors@R: as.person(c(
-    "Maximilian Toller <maximilian.toller@student.tugraz.at> [aut, cre]", 
-    "Tiago Santos <teixeiradossantos@tugraz.at> [aut]", 
-    "Roman Kern <rkern@know-center.at> [aut]"
-  ))
-Description: SAZED (Spectral and Average Autocorrelation Zero Distance Density)
-    is a package and method for estimating the season length of a seasonal time
-    series. SAZED is aimed at practitioners, as SAZED employs only
-    domain-agnostic pre-processing and does not depend on parameter tuning or
+Authors@R: c(
+    person("Maximilian", "Toller", , "maximilian.toller@student.tugraz.at", c("aut")), 
+    person("Tiago", "Santos", , "teixeiradossantos@tugraz.at", c("aut", "cre")), 
+    person("Roman", "Kern", , "rkern@know-center.at", c("aut"))
+    )
+Description: Spectral and Average Autocorrelation Zero Distance Density
+    ('SAZED') is a package and method for estimating the season length of a 
+    seasonal time series. 'SAZED' is aimed at practitioners, as it employs only
+    domain-agnostic preprocessing and does not depend on parameter tuning or
     empirical constants.
-License: CC0
+License: GPL-2
 Encoding: UTF-8
 LazyData: true
 Imports:
@@ -20,5 +20,6 @@ Imports:
     fftwtools (>= 0.9.8),
     forecast (>= 8.4),
     pracma (>= 2.1.4),
-    signal (>= 0.7.6)
-RoxygenNote: 6.0.1
+    signal (>= 0.7.6),
+    zoo (>= 1.8-3)
+RoxygenNote: 6.1.0
