@@ -7,6 +7,7 @@
 #'
 #' @docType package
 #' @name sazed
+#' @import stats
 NULL
 
 #' Compute the SA component of the SAZED ensemble
@@ -297,7 +298,7 @@ sazed <- function(y,iter=0,method="alt")
 
     iter <- iter + 1
 
-    if (mod(iter,2) == 1)
+    if (pracma::mod(iter,2) == 1)
     {
       return(2*sazed(downsample(y,2),iter))
     }
@@ -319,6 +320,7 @@ sazed <- function(y,iter=0,method="alt")
 #' @param data The input time series.
 #' @param window_size The size of the rolling mean window used.
 #' @return The downsampled time series.
+#' @importFrom zoo zoo rollapply
 downsample <- function(data, window_size=2)
 {
   return(ts(as.ts(rollapply(zoo(data),width=2,by=2,FUN=mean)),frequency=1))
