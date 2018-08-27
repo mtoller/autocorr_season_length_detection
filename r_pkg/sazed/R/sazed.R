@@ -24,7 +24,7 @@ NULL
 #' y <- sin(1:400*2*pi/season_length)
 #' Sa(y)
 #' Sa(y, preprocess = FALSE)
-#' #@export
+#' @export
 Sa <- function(y,preprocess=T)
 {
   if (preprocess)
@@ -45,7 +45,7 @@ Sa <- function(y,preprocess=T)
 #' y <- sin(1:400*2*pi/season_length)
 #' S(y)
 #' S(y, preprocess = FALSE)
-#' #@export
+#' @export
 S <- function(y,preprocess=T)
 {
   if (length(y) < 6)
@@ -86,7 +86,7 @@ S <- function(y,preprocess=T)
 #' y <- sin(1:400*2*pi/season_length)
 #' azed(y)
 #' azed(y, preprocess = FALSE)
-#' #@export
+#' @export
 azed <- function(y,preprocess=T)
 {
   if (preprocess)
@@ -107,7 +107,7 @@ azed <- function(y,preprocess=T)
 #' y <- sin(1:400*2*pi/season_length)
 #' zed(y)
 #' zed(y, preprocess = FALSE)
-#' #@export
+#' @export
 zed <- function(y,preprocess=T)
 {
   if (preprocess)
@@ -151,7 +151,7 @@ zed <- function(y,preprocess=T)
 #' y <- sin(1:400*2*pi/season_length)
 #' aze(y)
 #' aze(y, preprocess = FALSE)
-#' #@export
+#' @export
 aze <- function(y,preprocess=T)
 {
   if (preprocess)
@@ -171,7 +171,7 @@ aze <- function(y,preprocess=T)
 #' y <- sin(1:400*2*pi/season_length)
 #' ze(y)
 #' ze(y, preprocess = FALSE)
-#' #@export
+#' @export
 ze <- function(y,preprocess=T)
 {
   if (preprocess)
