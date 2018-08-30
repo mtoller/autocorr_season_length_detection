@@ -19,7 +19,6 @@ season_length <- 26
 y <- sin(1:400*2*pi/season_length)
 aze(y)
 aze(y, preprocess = FALSE)
-#@export
 }
 \description{
 \code{aze} estimates the season length of its argument from the mean autocorrelation zero
