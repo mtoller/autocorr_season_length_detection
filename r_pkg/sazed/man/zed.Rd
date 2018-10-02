@@ -19,7 +19,6 @@ season_length <- 26
 y <- sin(1:400*2*pi/season_length)
 zed(y)
 zed(y, preprocess = FALSE)
-#@export
 }
 \description{
 \code{zed} computes the zero density of its argument, and then derives the

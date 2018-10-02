@@ -19,7 +19,6 @@ season_length <- 26
 y <- sin(1:400*2*pi/season_length)
 S(y)
 S(y, preprocess = FALSE)
-#@export
 }
 \description{
 \code{S} computes the spectral density of its argument, and then derives the

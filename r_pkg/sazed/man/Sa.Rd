@@ -19,7 +19,6 @@ season_length <- 26
 y <- sin(1:400*2*pi/season_length)
 Sa(y)
 Sa(y, preprocess = FALSE)
-#@export
 }
 \description{
 \code{Sa} computes the autocorrelation of its argument, and then derives the
