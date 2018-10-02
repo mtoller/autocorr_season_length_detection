@@ -242,7 +242,6 @@ sazed <- function(y,iter=0,method="alt")
   
   results <- results[which(!is.infinite(results))];
   results <- results[which(!is.na(results))];
-  
   if (var(results) == 0)
   {
     return(results[1])
