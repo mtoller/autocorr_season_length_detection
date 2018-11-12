@@ -78,6 +78,7 @@ testPublicDatasets <- function(tolerance = 0,testExternal=F)
   sazed_down_results <- c()
   sazed_diff_results <- c()
   sazed_alt_results <- c()
+  deep_sazed_results <- c()
   #install.packages(c("fma", "expsmooth", "fpp2", "TSA", "astsa", "AER"))
   #source('trueSeasonLength.R')
   source('baselines.R')
@@ -105,6 +106,7 @@ testPublicDatasets <- function(tolerance = 0,testExternal=F)
       sazed_down_results = c(sazed_down_results,sazed(ts_data_nofreq,method = "down"))
       sazed_diff_results = c(sazed_diff_results,sazed(ts_data_nofreq,method = "diff"))
       sazed_alt_results = c(sazed_alt_results,sazed(ts_data_nofreq,method = "alt"))
+      deep_sazed_results <- c(deep_sazed_results,deepSazed(ts_data_nofreq))
     }
   }
   #Accuracy
@@ -132,6 +134,8 @@ testPublicDatasets <- function(tolerance = 0,testExternal=F)
   cat(paste0('sazed_diff passes ', evaluateTolerance(sazed_diff_results,actual_results,tolerance), 
              ' out of ', number_public_datasets, '\n'))
   cat(paste0('sazed_alt passes ', evaluateTolerance(sazed_alt_results,actual_results,tolerance), 
+             ' out of ', number_public_datasets, '\n'))
+  cat(paste0('deep_sazed passes ', evaluateTolerance(deep_sazed_results,actual_results,tolerance), 
              ' out of ', number_public_datasets, '\n'))
   #Friedman Rank Test - best algorithm is the one with lowest distance to actual_results (hence decreasing=F)
   #if (!require("devtools")) {
@@ -169,7 +173,8 @@ testPublicDatasets <- function(tolerance = 0,testExternal=F)
       aze=abs(aze_results - actual_results),
       sazed_down=abs(sazed_down_results - actual_results),
       sazed_diff=abs(sazed_diff_results - actual_results),
-      sazed_alt=abs(sazed_alt_results - actual_results)
+      sazed_alt=abs(sazed_alt_results - actual_results),
+      deep_sazed=abs(deep_sazed_results - actual_results)
     ),
     
     decreasing=F,cex = 1)
