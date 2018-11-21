@@ -1,4 +1,4 @@
-jssReproduceResults <- function(path='../')
+jssReproduceResults <- function()
 {
   require(signal)
   require(forecast)
@@ -16,7 +16,6 @@ jssReproduceResults <- function(path='../')
   source('callSeasonLength.R')
   source('baselines.R')
   source('fastAcf.R')
-  source('experiments.R')
   
   
   #load CRAN dataset
@@ -62,39 +61,39 @@ jssReproduceResults <- function(path='../')
                    12,12,12,12,12,12,12,130,12,12,12,12,12,12,130,12,12,12,12,12)
   for (i in 1:20)
   {
-    sl_data <- append(sl_data,list(unlist(read.table(paste(path,'test1/t',i,sep='',collapse = ' '))[2],
+    sl_data <- append(sl_data,list(unlist(read.table(paste('../test1/t',i,sep='',collapse = ' '))[2],
                                           use.names = F)))}
   for (i in 1:20)
   {
-    sl_data <- append(sl_data,list(unlist(read.table(paste(path,'test2/t',i,sep='',collapse = ' '))[2],
+    sl_data <- append(sl_data,list(unlist(read.table(paste('../test2/t',i,sep='',collapse = ' '))[2],
                                           use.names = F)))}
   for (i in 1:20)
   {
-    sl_data <- append(sl_data,list(unlist(read.table(paste(path,'test3/t',i,sep='',collapse = ' '))[2],
+    sl_data <- append(sl_data,list(unlist(read.table(paste('../test3/t',i,sep='',collapse = ' '))[2],
                                           use.names = F)))}
   for (i in 1:20)
   {
-    sl_data <- append(sl_data,list(unlist(read.table(paste(path,'test4/t',i,sep='',collapse = ' '))[2],
+    sl_data <- append(sl_data,list(unlist(read.table(paste('../test4/t',i,sep='',collapse = ' '))[2],
                                           use.names = F)))}
   for (i in 1:20)
   {
-    sl_data <- append(sl_data,list(unlist(read.table(paste(path,'test5/t',i,sep='',collapse = ' '))[2],
+    sl_data <- append(sl_data,list(unlist(read.table(paste('../test5/t',i,sep='',collapse = ' '))[2],
                                           use.names = F)))}
   for (i in 1:15)
   {
-    sl_data <- append(sl_data,list(unlist(read.table(paste(path,'test6/t',i,sep='',collapse = ' '))[2],
+    sl_data <- append(sl_data,list(unlist(read.table(paste('../test6/t',i,sep='',collapse = ' '))[2],
                                           use.names = F)))}
   for (i in 1:10)
   {
-    sl_data <- append(sl_data,list(unlist(read.table(paste(path,'test7/t',i,sep='',collapse = ' '))[2],
+    sl_data <- append(sl_data,list(unlist(read.table(paste('../test7/t',i,sep='',collapse = ' '))[2],
                                           use.names = F)))}
   for (i in 1:20)
   {
-    sl_data <- append(sl_data,list(unlist(read.table(paste(path,'testR/t',i,sep='',collapse = ' '))[1],
+    sl_data <- append(sl_data,list(unlist(read.table(paste('../testR/t',i,sep='',collapse = ' '))[1],
                                           use.names = F)))}
   for (i in 1:20)
   {
-    sl_data <- append(sl_data,list(unlist(read.table(paste(path,'testC/t',i,sep='',collapse = ' '))[1],
+    sl_data <- append(sl_data,list(unlist(read.table(paste('../testC/t',i,sep='',collapse = ' '))[1],
                                           use.names = F)))}
   
   #plot sunspots
@@ -168,7 +167,6 @@ jssReproduceResults <- function(path='../')
   aze_results_cran <- c()
   zed_results_cran <- c()
   azed_results_cran <- c()
-  deep_sazed_results_cran <- c()
   
   findfrequency_results_sl <- c()
   seasonLength_results_sl  <- c()
@@ -181,7 +179,6 @@ jssReproduceResults <- function(path='../')
   aze_results_sl <- c()
   zed_results_sl <- c()
   azed_results_sl <- c()
-  deep_sazed_results_sl <- c()
   
   for (test in cran_data)
   {
@@ -207,8 +204,6 @@ jssReproduceResults <- function(path='../')
     zed_results_cran <- c(zed_results_cran,r)
     r <- tryCatch(azed(test),error = function(e){return(1)})
     azed_results_cran <- c(azed_results_cran,r)
-    r <- R.utils::withTimeout(tryCatch(deepSazed(test),error = function(e){return(1)}),timeout = 30)
-    deep_sazed_results_cran <- c(deep_sazed_results_cran,r)
   }
   for (test in sl_data)
   {
@@ -234,12 +229,10 @@ jssReproduceResults <- function(path='../')
     zed_results_sl <- c(zed_results_sl,r)
     r <- tryCatch(azed(test),error = function(e){return(1)})
     azed_results_sl <- c(azed_results_sl,r)
-    r <- R.utils::withTimeout(tryCatch(deepSazed(test),error = function(e){return(1)}),timeout = 30)
-    deep_sazed_results_sl <- c(deep_sazed_results_sl,r)
   }
   
   #create table
-  result_table <- matrix(nrow = 12, ncol = 4)
+  result_table <- matrix(nrow = 11, ncol = 4)
   result_table[1,1] <- determineTolerance(findfrequency_results_cran,cran_expected,0.0)
   result_table[1,2] <- determineTolerance(findfrequency_results_cran,cran_expected,0.2)
   result_table[1,3] <- determineTolerance(findfrequency_results_sl,sl_expected,0.0)
@@ -295,11 +288,6 @@ jssReproduceResults <- function(path='../')
   result_table[11,3] <- determineTolerance(azed_results_sl,sl_expected,0.0)
   result_table[11,4] <- determineTolerance(azed_results_sl,sl_expected,0.2)
   
-  result_table[12,1] <- determineTolerance(deep_sazed_results_cran,cran_expected,0.0)
-  result_table[12,2] <- determineTolerance(deep_sazed_results_cran,cran_expected,0.2)
-  result_table[12,3] <- determineTolerance(deep_sazed_results_sl,sl_expected,0.0)
-  result_table[12,4] <- determineTolerance(deep_sazed_results_sl,sl_expected,0.2)
-  
   print(result_table)
   
   #CD-plot
@@ -317,8 +305,7 @@ jssReproduceResults <- function(path='../')
     aze=determineDistance(aze_results_cran, cran_expected),
     sazed_down=determineDistance(sazed_down_results_cran, cran_expected),
     sazed_diff=determineDistance(sazed_diff_results_cran, cran_expected),
-    sazed_alt=determineDistance(sazed_alt_results_cran, cran_expected),
-    deep_sazed=determineDistance(deep_sazed_results_cran, cran_expected)
+    sazed_alt=determineDistance(sazed_alt_results_cran, cran_expected)
   ),
   
   decreasing=F,cex = 1)
@@ -336,8 +323,7 @@ jssReproduceResults <- function(path='../')
     aze=determineDistance(aze_results_sl, sl_expected),
     sazed_down=determineDistance(sazed_down_results_sl, sl_expected),
     sazed_diff=determineDistance(sazed_diff_results_sl, sl_expected),
-    sazed_alt=determineDistance(sazed_alt_results_sl, sl_expected),
-    deep_sazed=determineDistance(deep_sazed_results_sl, sl_expected)
+    sazed_alt=determineDistance(sazed_alt_results_sl, sl_expected)
   ),
   
   decreasing=F,cex = 1)
