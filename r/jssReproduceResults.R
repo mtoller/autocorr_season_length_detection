@@ -207,8 +207,8 @@ jssReproduceResults <- function(path='../')
     zed_results_cran <- c(zed_results_cran,r)
     r <- tryCatch(azed(test),error = function(e){return(1)})
     azed_results_cran <- c(azed_results_cran,r)
-    r <- R.utils::withTimeout(tryCatch(deepSazed(test),error = function(e){return(1)}),timeout = 30)
-    deep_sazed_results_cran <- c(deep_sazed_results_cran,r)
+    #r <- R.utils::withTimeout(tryCatch(deepSazed(test),error = function(e){return(1)}),timeout = 30)
+    deep_sazed_results_cran <- c(deep_sazed_results_cran,1)
   }
   for (test in sl_data)
   {
@@ -234,8 +234,8 @@ jssReproduceResults <- function(path='../')
     zed_results_sl <- c(zed_results_sl,r)
     r <- tryCatch(azed(test),error = function(e){return(1)})
     azed_results_sl <- c(azed_results_sl,r)
-    r <- R.utils::withTimeout(tryCatch(deepSazed(test),error = function(e){return(1)}),timeout = 30)
-    deep_sazed_results_sl <- c(deep_sazed_results_sl,r)
+    #r <- R.utils::withTimeout(tryCatch(deepSazed(test),error = function(e){return(1)}),timeout = 30)
+    deep_sazed_results_sl <- c(deep_sazed_results_sl,1)
   }
   
   #create table
