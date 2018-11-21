@@ -39,7 +39,7 @@ S <- function(y,preprocess=T)
     y <- preprocessTs(y)
   }
   n <- length(y)
-  periodigram <- spec.pgram(y,detrend=T,plot=F)
+  periodigram <- spec.pgram(y,detrend=F,plot=F)
   if (n >= 6)
   {
     welch <- welchPSD(as.ts(y),round(n*2/pi),windowfun = welchwindow)
