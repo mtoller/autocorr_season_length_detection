@@ -1,6 +1,6 @@
-function [a] = callSeasonLength(filename='../r/temp')
+function [a] = callSeasonLength(filename='temp')
   ts = load(filename);
   m = seasonLength(ts);
-  save('-ascii','../r/temp','m');
+  save('-ascii','temp','m');
   a = m;
 endfunction

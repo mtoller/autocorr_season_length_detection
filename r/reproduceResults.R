@@ -1,5 +1,9 @@
 reproduceResults <- function()
 {
+  switch(Sys.info()[['sysname']],
+         Windows= {pathSymbol <- '\\'},
+         Linux  = {pathSymbol <- '/'},
+         Darwin = {pathSymbol <- '/'})
   require(signal)
   require(forecast)
   require(pracma)
@@ -61,39 +65,39 @@ reproduceResults <- function()
                    12,12,12,12,12,12,12,130,12,12,12,12,12,12,130,12,12,12,12,12)
   for (i in 1:20)
   {
-    sl_data <- append(sl_data,list(unlist(read.table(paste('../test1/t',i,sep='',collapse = ' '))[2],
+    sl_data <- append(sl_data,list(unlist(read.table(paste('..',pathSymbol,'test1',pathSymbol,'t',i,sep='',collapse = ' '))[2],
                                           use.names = F)))}
   for (i in 1:20)
   {
-    sl_data <- append(sl_data,list(unlist(read.table(paste('../test2/t',i,sep='',collapse = ' '))[2],
+    sl_data <- append(sl_data,list(unlist(read.table(paste('..',pathSymbol,'test2',pathSymbol,'t',i,sep='',collapse = ' '))[2],
                                           use.names = F)))}
   for (i in 1:20)
   {
-    sl_data <- append(sl_data,list(unlist(read.table(paste('../test3/t',i,sep='',collapse = ' '))[2],
+    sl_data <- append(sl_data,list(unlist(read.table(paste('..',pathSymbol,'test3',pathSymbol,'t',i,sep='',collapse = ' '))[2],
                                           use.names = F)))}
   for (i in 1:20)
   {
-    sl_data <- append(sl_data,list(unlist(read.table(paste('../test4/t',i,sep='',collapse = ' '))[2],
+    sl_data <- append(sl_data,list(unlist(read.table(paste('..',pathSymbol,'test4',pathSymbol,'t',i,sep='',collapse = ' '))[2],
                                           use.names = F)))}
   for (i in 1:20)
   {
-    sl_data <- append(sl_data,list(unlist(read.table(paste('../test5/t',i,sep='',collapse = ' '))[2],
+    sl_data <- append(sl_data,list(unlist(read.table(paste('..',pathSymbol,'test5',pathSymbol,'t',i,sep='',collapse = ' '))[2],
                                           use.names = F)))}
   for (i in 1:15)
   {
-    sl_data <- append(sl_data,list(unlist(read.table(paste('../test6/t',i,sep='',collapse = ' '))[2],
+    sl_data <- append(sl_data,list(unlist(read.table(paste('..',pathSymbol,'test6',pathSymbol,'t',i,sep='',collapse = ' '))[2],
                                           use.names = F)))}
   for (i in 1:10)
   {
-    sl_data <- append(sl_data,list(unlist(read.table(paste('../test7/t',i,sep='',collapse = ' '))[2],
+    sl_data <- append(sl_data,list(unlist(read.table(paste('..',pathSymbol,'test7',pathSymbol,'t',i,sep='',collapse = ' '))[2],
                                           use.names = F)))}
   for (i in 1:20)
   {
-    sl_data <- append(sl_data,list(unlist(read.table(paste('../testR/t',i,sep='',collapse = ' '))[1],
+    sl_data <- append(sl_data,list(unlist(read.table(paste('..',pathSymbol,'testR',pathSymbol,'t',i,sep='',collapse = ' '))[1],
                                           use.names = F)))}
   for (i in 1:20)
   {
-    sl_data <- append(sl_data,list(unlist(read.table(paste('../testC/t',i,sep='',collapse = ' '))[1],
+    sl_data <- append(sl_data,list(unlist(read.table(paste('..',pathSymbol,'testC',pathSymbol,'t',i,sep='',collapse = ' '))[1],
                                           use.names = F)))}
   
   #plot sunspots
