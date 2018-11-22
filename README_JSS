@@ -1,8 +1,0 @@
-REPRODUCE RESULTS:
-To reproduce the results of the submission to the Journal of Statistical Software, run the function 'jssReproduceResults()' in r/jssReproduceResults.R
-The expected runtime is between 2 and 10 minutes, depending on the underlying hardware.
-
-PLATFORM DEPENDENCIES
-Since 'seasonLength' was not implemented in R, but in Matlab, it is indirectly called from the R code via a shell execution of an octave script.
-This causes a platform dependency - this particular code only runs on unix based operating systems with octave installed.
-To adjust this to other platforms, modify the 'system' commands in r/callSeasonLength.R and matlab/callSeasonLength.m.  
