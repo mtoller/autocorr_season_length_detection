@@ -131,11 +131,12 @@ reproduceResults <- function()
   #plot ensemble example
   dev.new()
   par(mfrow=c(1,3))
+  par(cex=1.3)
   y <- ts(sl_data[[157]])
-  plot(y)
+  plot(y,ylab='Value')
   s <- spec.pgram(y,detrend = F,plot = F)
-  plot(s$freq,s$spec,ylim=c(0,30),type='l')
-  plot(acf.fft(y),type='l')
+  plot(s$freq,s$spec,log='y',type='l',xlab='Frequency',ylab='Density')
+  plot(acf.fft(y),type='l',xlab='Lag',ylab='Density')
   
   #plot package usage example
   dev.new()
