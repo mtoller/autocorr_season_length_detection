@@ -289,5 +289,5 @@ sazed <- function(y,iter=0,method="alt")
 downsample = function(data, window_size=2)
 {
   require(zoo);
-  return(ts(as.ts(rollapply(zoo(data),width=2,by=2,FUN=mean)),frequency=1))
+  return(ts(as.ts(rollapply(zoo(data),width=window_size,by=window_size,FUN=mean)),frequency=1))
 }
