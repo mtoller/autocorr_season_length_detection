@@ -40,18 +40,19 @@ S <- function(y,preprocess=T)
   }
   n <- length(y)
   periodigram <- spec.pgram(y,detrend=T,plot=F)
-  if (n >= 6)
-  {
-    welch <- welchPSD(as.ts(y),round(n*2/pi),windowfun = welchwindow)
-  }
-  else
-  {
-    welch <- welchPSD(as.ts(y),n,windowfun = welchwindow)
-  }
-  period1 <- round(1/(periodigram$freq[which.max(periodigram$spec)]))
-  period2 <- round(1/(welch$frequency[which.max(welch$power)]))
+  return(round(1/(periodigram$freq[which.max(periodigram$spec)])))
+  #if (n >= 6)
+  #{
+  #  welch <- welchPSD(as.ts(y),round(n*2/pi),windowfun = welchwindow)
+  #}
+  #else
+  #{
+  #  welch <- welchPSD(as.ts(y),n,windowfun = welchwindow)
+  #}
+  #period1 <- round(1/(periodigram$freq[which.max(periodigram$spec)]))
+  #period2 <- round(1/(welch$frequency[which.max(welch$power)]))
   
-  return(round((period1+period2)/2))
+  #return(round((period1+period2)/2))
   
 }
 #' Compute the AZED component of the SAZED ensemble
@@ -163,7 +164,7 @@ ze = function(y,preprocess=T)
   {
     return(result)
   }
-  return(0)
+  return(1)
   
 }
 #' Compute and shorten autocorrelation
@@ -210,7 +211,7 @@ preprocessTs <- function(y)
 #' season_length <- 26
 #' y <- sin(1:400*2*pi/season_length)
 #' sazed(y)
-sazed <- function(y,iter=0,method="alt")
+sazed <- function(y,iter=0,method="alt",preprocess=T)
 {
   require(signal)
   require(forecast)
@@ -233,15 +234,15 @@ sazed <- function(y,iter=0,method="alt")
   }
 
   results <- c()
-  results <- c(results,S(y))
-  results <- c(results,Sa(y))
-  results <- c(results,ze(y))
-  results <- c(results,aze(y))
-  results <- c(results,zed(y))
-  results <- c(results,azed(y))
+  results <- c(results,S(y,preprocess))
+  results <- c(results,Sa(y,preprocess))
+  results <- c(results,ze(y,preprocess))
+  results <- c(results,aze(y,preprocess))
+  results <- c(results,zed(y,preprocess))
+  results <- c(results,azed(y,preprocess))
   
-  results <- results[which(!is.infinite(results))];
-  results <- results[which(!is.na(results))];
+  results <- results[which(!is.infinite(results))]
+  results <- results[which(!is.na(results))]
   if (var(results) == 0)
   {
     return(results[1])
@@ -273,11 +274,11 @@ sazed <- function(y,iter=0,method="alt")
   else if (length(tab[which(tab == max(tab))]) > 1)
   {
     sorted = sort(unique_results,decreasing = TRUE)
-    return(sorted[which.max(tabulate(match(sort(results,decreasing = TRUE),sorted)))]);
+    return(sorted[which.max(tabulate(match(sort(results,decreasing = TRUE),sorted)))])
   }
 
-  vote = unique_results[which.max(tabulate(match(results,unique_results)))];
-  return(vote);
+  vote = unique_results[which.max(tabulate(match(results,unique_results)))]
+  return(vote)
 }
 #' Downsample Time Series
 #' 

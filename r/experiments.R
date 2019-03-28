@@ -24,7 +24,7 @@ cos.sim <- function(a,b)
   return(t(a)%*%b/sqrt(sum(a^2)*sum(b^2)))
 }
 
-repAcfSeq <- function(data, func = mean,limit = 100, epsilon = 1e-01)
+repAcfSeq <- function(data, func = mean,limit = 100, epsilon = 1e-01,...)
 {
   a <- data
   old_a <- a
@@ -32,8 +32,8 @@ repAcfSeq <- function(data, func = mean,limit = 100, epsilon = 1e-01)
   for (i in 1:limit)
   {
     a <- acf.fft(a)
-    #result <- c(result,func(a,method='down'))
-    result <- c(result,func(a,preprocess=F))
+    result <- c(result,func(a,...))
+    #result <- c(result,func(a,preprocess=F))
     if (CID(a,old_a) < epsilon) break;
     old_a <- a
     
@@ -59,9 +59,12 @@ deepSazed <- function(data)
     print('y has no variance')
     return(1)
   }
-  data <- scale(as.ts(detrend(as.vector(data))))
-  ms <- sazedR::sazed(data)
-  ms <- unique(c(ms,repAcfSeq(scale(data),func = sazedR::S)))
+  #data <- scale(as.ts(detrend(as.vector(data))))
+  data <- as.ts(detrend(as.vector(data)))
+  #ms <- sazed(data)
+  ms <- csazed(data)
+  #ms <- unique(c(ms,repAcfSeq(data,func = sazed,method='down',preprocess=T)))
+  ms <- unique(c(ms,repAcfSeq(data,func = csazed)))
   result <- compressedSimilarity(data,ms)
   print(list(ms,result))
   cat(paste0('Confidence: ', max(result),'\n'))
@@ -104,7 +107,7 @@ compressedSimilarity <- function(data,ms,method=cor,...)
     }
     subs <- sapply(1:k,function(i){data[(((i-1)*m)+1):(i*m)]})
     #print(subs)
-    similarity <- applyDistanceToPairs(matrix(unlist(subs),nrow = m,ncol = k,byrow = F),method)
+    similarity <- cor(subs)#applyDistanceToPairs(matrix(unlist(subs),nrow = m,ncol = k,byrow = F),method)
     if (similarity[1,1] == 0) #convert distance to similarity
     {
       similarity <- similarity/max(similarity)
@@ -132,15 +135,25 @@ mdl <- function(data)
   print(mdls)
   return(which.max(mdls)+1)
 }
-variability <- function(data)
+variability <- function(x,limit=50,j=3)
 {
-  N <- length(data)
-  for (n in 2:(floor(N)/50))
+  N <- length(x)
+  if (N < limit) return(1)
+  tau <- 0
+  v_hat <- rep(0,limit-1)
+  for (n in 2:limit)
   {
-    i <- floor(N/n)
-    subs <- t(sapply(0:(n-1),function(j)data[(1:i)*n+j]))
-    print(subs)
+    p <- floor(N/n)
+    blocked <- sapply(0:(p-1),function(i)x[(1+(i*n)):(n+(i*n))])
+    m_hat <- sapply(blocked,mean)
+    v_hat[n-1] <- var(m_hat)
+    #r_hat <- apply(blocked,1,var) %>% as.numeric
+    #print(r_hat)
+    #print(var(as.numeric(r_hat)))
+    #v_hat[n-1] <- var(r_hat)
   }
+  #plot.ts(v_hat)
+  v_hat %>% spec.pgram() %>% {1/.$freq[min(order(.$spec,decreasing = T)[1:j])]} %>% return
 }
 altSazed <- function(data)
 {
@@ -192,7 +205,7 @@ testAllSLSuggestions <- function(data)
   require(pracma)
   data <- scale(as.ts(detrend(as.vector(data))))
   n <- length(data)
-  if (n > 8000) return(1)
+  #if (n > 8000) return(1)
   ms <- 2:floor(n/3)
   #return(evaluateSLSuggestions(data,ms))
   result <- compressedSimilarity(data,ms)
@@ -382,42 +395,73 @@ csazed <- function(x){
     return(1)
   }
   
-  results <- c()
-  results <- c(results,S(x))
-  results <- c(results,Sa(x))
-  results <- c(results,ze(x))
-  results <- c(results,aze(x))
-  results <- c(results,zed(x))
-  results <- c(results,azed(x))
-  
-  results <- results[which(!is.infinite(results))];
-  results <- results[which(!is.na(results))];
-  
-  unique_results <- unique(results)
-  tab <- match(results, unique_results) %>% tabulate()
-  majorities <- results[which(tab==max(tab))]
-  l <- length(majorities)
-  if (l == 1){
-    return(results[1])
-  }
-  #print(majorities)
-  result <- sapply(majorities,function(d){
-    k <- floor(l/d)
-    #print(k)
-    if (m <=2 | k <= 3)
-    {
-      return(0)
+  p <- 0
+  r <- 1
+  f <- 0
+  repeat{
+    
+    results <- c()
+    results <- c(results,S(x))
+    results <- c(results,Sa(x))
+    results <- c(results,ze(x))
+    results <- c(results,aze(x))
+    results <- c(results,zed(x))
+    results <- c(results,azed(x))
+    
+    results <- results[which(!is.infinite(results))]
+    results <- results[which(!is.na(results))]
+    results <- results[which(results >= 2)]
+    
+    if (length(results) < 1) return(1)
+    if (var(results) == 0) return(results[1])
+    
+    #certainties <- sapply(results,function(d){
+    #  
+    #  k <- floor(length(x)/d)
+    #  if (d <=2 | k <= 3)
+    #  {
+    #    return(0)
+    #  }
+    #  subs <- sapply(1:k,function(i){x[(((i-1)*d)+1):(i*d)]})
+    #  subs %>% cor() %>% min %>% return()
+    #})
+    #if (any(certainties == 1)) return(max(certainties[which(certainties == 1)]))
+    
+    #print(results)
+    #print(certainties)
+    tab <- table(results)
+    majorities <- which(tab==max(tab)) %>% {names(tab)[.]} %>% sapply(as.numeric) %>% as.numeric
+    #print(table(results))
+    #print(majorities)
+    l <- length(majorities)
+    #print(l)
+    if (l == 1){
+      return(majorities[1])
     }
-    subs <- sapply(1:k,function(i){x[(((i-1)*d)+1):(i*d)]})
-    subs %>% cor() %>% min %>% return()
-    #print(subs)
-    #similarity <- applyDistanceToPairs(matrix(unlist(subs),nrow = d,ncol = k,byrow = F),method)
-    #if (similarity[1,1] == 0) #convert distance to similarity
-    #{
-    #  similarity <- similarity/max(similarity)
-    #  similarity <- 1 - similarity
-    #}
-    #return(mean(similarity,na.rm = T))
-  })
-  result %>% which.max %>% {majorities[.]} %>% return
+    #print(majorities)
+    certainties <- sapply(majorities,function(d){
+      
+      k <- floor(length(x)/d)
+      if (d <=2 | k <= 3)
+      {
+        return(0)
+      }
+      subs <- sapply(1:k,function(i){x[(((i-1)*d)+1):(i*d)]})
+      subs %>% cor() %>% min %>% return()
+    })
+    certainties[which(is.na(certainties))] <- 0
+    p <- max(certainties)
+    r <- certainties %>% {min(which(. == max(.)))} %>% {majorities[.]}
+    #result %>% print
+    #result %>% max %>% print
+    #result %>% {max(which(. == max(.)))} %>% {majorities[.]} %>% return
+    cat(paste0("p is ",p,"\n"))
+    if (p > 0) break
+    #x <- acf.fft(x)
+    x <- downsample(x,window_size = 2)
+    f <- f+1
+    #if (f > 50) break
+  }
+  #return(r)
+  return(r*2^f)
 }
