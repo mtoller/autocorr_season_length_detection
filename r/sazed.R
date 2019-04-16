@@ -39,7 +39,7 @@ S <- function(y,preprocess=T)
     y <- preprocessTs(y)
   }
   n <- length(y)
-  periodigram <- spec.pgram(y,detrend=T,plot=F)
+  periodigram <- spec.pgram(y,detrend=T,plot=F,taper = 0)
   return(round(1/(periodigram$freq[which.max(periodigram$spec)])))
   #if (n >= 6)
   #{
@@ -105,13 +105,13 @@ zed <- function(y,preprocess=T)
   {
     return(1)
   }
-  dens <- density(z_to_z,kernel = 'epanechnikov')
+  dens <- density(z_to_z,kernel = 'gaussian',bw = 'SJ')
 
-    if (!is.list(dens) && is.nan(dens))
+  if (!is.list(dens) && is.nan(dens))
   {
     return(1)
   }
-
+  
   return(round(dens$x[which.max(dens$y)]*2))
 }
 #' Compute the AZE component of the SAZED ensemble
@@ -179,6 +179,7 @@ ze = function(y,preprocess=T)
 #' computeAcf(y)
 computeAcf <- function(y)
 {
+  return(repAcf(y,method = 'fft'))
   autocorrelation <- as.ts(acf.fft(y))
   autocorrelation <- autocorrelation[2:length(autocorrelation)]
   factor <- 2/3

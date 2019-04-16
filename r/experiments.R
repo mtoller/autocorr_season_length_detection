@@ -1,12 +1,41 @@
-repAcf <- function(data,reps = 10)
+repAcf <- function(data,reps = 10, method='both')
 {
   source('fastAcf.R')
   a <- data
-  
-  for (i in 1:reps)
-  {
-    a <- acf.fft(a)
+  n <- length(data)
+  if (reps < 1) return(a)
+  if (method == 'both'){
+    for (i in 1:reps)
+    {
+      if (n > 2^14)
+        a <- acf.fft(a)
+      else
+        a <- acf.normal(a)
+    }
   }
+  else if (method == 'fft'){
+    for (i in 1:reps)
+    {
+      a <- acf.fft(a)
+    }
+  }
+  else if (method == 'normal')
+  {
+    for (i in 1:reps)
+    {
+      a <- acf.normal(a)
+    }
+  }
+  else if (method == 'pure'){
+    for (i in 1:reps)
+    {
+      a <- acf.pure(a)
+    }
+  }
+  else{
+    stop(paste0("Unkown ACF method '",method,"'. Must be one of c('both','fft','normal, pure')"))
+  }
+    
   return(a)
 }
 
@@ -415,30 +444,16 @@ csazed <- function(x){
     if (length(results) < 1) return(1)
     if (var(results) == 0) return(results[1])
     
-    #certainties <- sapply(results,function(d){
-    #  
-    #  k <- floor(length(x)/d)
-    #  if (d <=2 | k <= 3)
-    #  {
-    #    return(0)
-    #  }
-    #  subs <- sapply(1:k,function(i){x[(((i-1)*d)+1):(i*d)]})
-    #  subs %>% cor() %>% min %>% return()
-    #})
-    #if (any(certainties == 1)) return(max(certainties[which(certainties == 1)]))
     
-    #print(results)
-    #print(certainties)
     tab <- table(results)
     majorities <- which(tab==max(tab)) %>% {names(tab)[.]} %>% sapply(as.numeric) %>% as.numeric
-    #print(table(results))
-    #print(majorities)
+    
     l <- length(majorities)
-    #print(l)
+   
     if (l == 1){
       return(majorities[1])
     }
-    #print(majorities)
+   
     certainties <- sapply(majorities,function(d){
       
       k <- floor(length(x)/d)
@@ -452,16 +467,390 @@ csazed <- function(x){
     certainties[which(is.na(certainties))] <- 0
     p <- max(certainties)
     r <- certainties %>% {min(which(. == max(.)))} %>% {majorities[.]}
-    #result %>% print
-    #result %>% max %>% print
-    #result %>% {max(which(. == max(.)))} %>% {majorities[.]} %>% return
+    
     cat(paste0("p is ",p,"\n"))
     if (p > 0) break
-    #x <- acf.fft(x)
+    
     x <- downsample(x,window_size = 2)
     f <- f+1
-    #if (f > 50) break
+   
   }
   #return(r)
   return(r*2^f)
+}
+csazed2 <- function(x){
+  return(deepSazed2(x))
+  require(sazedR)
+  require(signal)
+  require(forecast)
+  require(pracma)
+  require(bspec)
+  require(dplyr)
+  source('sazed.R')
+  if (anyNA(x))
+  {
+    print('NA is not supported')
+    return(1)
+  }
+  if (any(is.infinite(x)) || any(is.complex(x)))
+  {
+    print('complex numbers are not supported')
+    return(1)
+  }
+  if (var(x) == 0)
+  {
+    print('y has no variance')
+    return(1)
+  }
+  
+  p <- 0
+  r <- 1
+  f <- 0
+  repeat{
+    
+    results <- c()
+    results <- c(results,S(x))
+    #results <- c(results,Sa(x))
+    #results <- c(results,ze(x))
+    results <- c(results,aze(x))
+    #results <- c(results,zed(x))
+    #results <- c(results,azed(x))
+    results <- c(results,acfPeak(x))
+    
+    results <- results[which(!is.infinite(results))]
+    results <- results[which(!is.na(results))]
+    results <- results[which(results >= 2)]
+    
+    if (length(results) < 1) return(1)
+    if (var(results) == 0) return(results[1])
+    
+    
+    tab <- table(results)
+    majorities <- which(tab==max(tab)) %>% {names(tab)[.]} %>% sapply(as.numeric) %>% as.numeric
+    
+    l <- length(majorities)
+    
+    if (l == 1){
+      return(majorities[1])
+    }
+   
+    certainties <- sapply(majorities,function(d){
+      
+      k <- floor(length(x)/d)
+      if (d <=2 | k <= 3)
+      {
+        return(0)
+      }
+      subs <- sapply(1:k,function(i){x[(((i-1)*d)+1):(i*d)]})
+      subs %>% cor() %>% min %>% return()
+
+    })
+    
+    certainties[which(is.na(certainties))] <- 0
+    p <- max(certainties)
+    r <- certainties %>% {min(which(. == max(.)))} %>% {majorities[.]}
+    
+   
+    if (p > 0) break
+   
+    x <- downsample(x,window_size = 2)
+    f <- f+1
+  }
+  #return(r)
+  return(r*2^f)
+}
+
+addNewResults <- function()
+{
+  require(scmamp)
+  csazed2_results_cran <- c()
+  csazed2_results_sl <- c()
+  csazed2_results_toy <- c()
+  
+  for (test in cran_data){
+    r <- tryCatch(csazed2(test),error = function(e){return(1)})
+    csazed2_results_cran <- c(csazed2_results_cran,r)
+  }
+  for (test in sl_data){
+    r <- tryCatch(csazed2(test),error = function(e){return(1)})
+    csazed2_results_sl <- c(csazed2_results_sl,r)
+  }
+  for (test in toy_data){
+    r <- tryCatch(csazed2(test),error = function(e){return(1)})
+    csazed2_results_toy <- c(csazed2_results_toy,r)
+  }
+  result_table <- matrix(nrow = 13, ncol = 9)
+  result_table[1,1] <- determineTolerance(findfrequency_results_cran,cran_expected,0.0)
+  result_table[1,2] <- determineTolerance(findfrequency_results_cran,cran_expected,0.2)
+  result_table[1,3] <- determineMultiple(findfrequency_results_cran,cran_expected,0.0)
+  result_table[1,4] <- determineTolerance(findfrequency_results_sl,sl_expected,0.0)
+  result_table[1,5] <- determineTolerance(findfrequency_results_sl,sl_expected,0.2)
+  result_table[1,6] <- determineMultiple(findfrequency_results_sl,sl_expected,0.0)
+  result_table[1,7] <- determineTolerance(findfrequency_results_toy,toy_expected,0.0)
+  result_table[1,8] <- determineTolerance(findfrequency_results_toy,toy_expected,0.2)
+  result_table[1,9] <- determineMultiple(findfrequency_results_toy,toy_expected,0.0)
+  
+  result_table[2,1] <- determineTolerance(seasonLength_results_cran,cran_expected,0.0)
+  result_table[2,2] <- determineTolerance(seasonLength_results_cran,cran_expected,0.2)
+  result_table[2,3] <- determineMultiple(seasonLength_results_cran,cran_expected,0.0)
+  result_table[2,4] <- determineTolerance(seasonLength_results_sl,sl_expected,0.0)
+  result_table[2,5] <- determineTolerance(seasonLength_results_sl,sl_expected,0.2)
+  result_table[2,6] <- determineMultiple(seasonLength_results_sl,sl_expected,0.0)
+  result_table[2,7] <- determineTolerance(seasonLength_results_toy,toy_expected,0.0)
+  result_table[2,8] <- determineTolerance(seasonLength_results_toy,toy_expected,0.2)
+  result_table[2,9] <- determineMultiple(seasonLength_results_toy,toy_expected,0.0)
+  
+  
+  result_table[3,1] <- determineTolerance(sazed_down_results_cran,cran_expected,0.0)
+  result_table[3,2] <- determineTolerance(sazed_down_results_cran,cran_expected,0.2)
+  result_table[3,3] <- determineMultiple(sazed_down_results_cran,cran_expected,0.0)
+  result_table[3,4] <- determineTolerance(sazed_down_results_sl,sl_expected,0.0)
+  result_table[3,5] <- determineTolerance(sazed_down_results_sl,sl_expected,0.2)
+  result_table[3,6] <- determineMultiple(sazed_down_results_sl,sl_expected,0.0)
+  result_table[3,7] <- determineTolerance(sazed_down_results_toy,toy_expected,0.0)
+  result_table[3,8] <- determineTolerance(sazed_down_results_toy,toy_expected,0.2)
+  result_table[3,9] <- determineMultiple(sazed_down_results_toy,toy_expected,0.0)
+  
+  result_table[4,1] <- determineTolerance(sazed_diff_results_cran,cran_expected,0.0)
+  result_table[4,2] <- determineTolerance(sazed_diff_results_cran,cran_expected,0.2)
+  result_table[4,3] <- determineMultiple(sazed_diff_results_cran,cran_expected,0.0)
+  result_table[4,4] <- determineTolerance(sazed_diff_results_sl,sl_expected,0.0)
+  result_table[4,5] <- determineTolerance(sazed_diff_results_sl,sl_expected,0.2)
+  result_table[4,6] <- determineMultiple(sazed_diff_results_sl,sl_expected,0.0)
+  result_table[4,7] <- determineTolerance(sazed_diff_results_toy,toy_expected,0.0)
+  result_table[4,8] <- determineTolerance(sazed_diff_results_toy,toy_expected,0.2)
+  result_table[4,9] <- determineMultiple(sazed_diff_results_toy,toy_expected,0.0)
+  
+  result_table[5,1] <- determineTolerance(sazed_alt_results_cran,cran_expected,0.0)
+  result_table[5,2] <- determineTolerance(sazed_alt_results_cran,cran_expected,0.2)
+  result_table[5,3] <- determineMultiple(sazed_alt_results_cran,cran_expected,0.0)
+  result_table[5,4] <- determineTolerance(sazed_alt_results_sl,sl_expected,0.0)
+  result_table[5,5] <- determineTolerance(sazed_alt_results_sl,sl_expected,0.2)
+  result_table[5,6] <- determineMultiple(sazed_alt_results_sl,sl_expected,0.0)
+  result_table[5,7] <- determineTolerance(sazed_alt_results_toy,toy_expected,0.0)
+  result_table[5,8] <- determineTolerance(sazed_alt_results_toy,toy_expected,0.2)
+  result_table[5,9] <- determineMultiple(sazed_alt_results_toy,toy_expected,0.0)
+  
+  result_table[6,1] <- determineTolerance(s_results_cran,cran_expected,0.0)
+  result_table[6,2] <- determineTolerance(s_results_cran,cran_expected,0.2)
+  result_table[6,3] <- determineMultiple(s_results_cran,cran_expected,0.0)
+  result_table[6,4] <- determineTolerance(s_results_sl,sl_expected,0.0)
+  result_table[6,5] <- determineTolerance(s_results_sl,sl_expected,0.2)
+  result_table[6,6] <- determineMultiple(s_results_sl,sl_expected,0.0)
+  result_table[6,7] <- determineTolerance(s_results_toy,toy_expected,0.0)
+  result_table[6,8] <- determineTolerance(s_results_toy,toy_expected,0.2)
+  result_table[6,9] <- determineMultiple(s_results_toy,toy_expected,0.0)
+  
+  result_table[7,1] <- determineTolerance(sa_results_cran,cran_expected,0.0)
+  result_table[7,2] <- determineTolerance(sa_results_cran,cran_expected,0.2)
+  result_table[7,3] <- determineMultiple(sa_results_cran,cran_expected,0.0)
+  result_table[7,4] <- determineTolerance(sa_results_sl,sl_expected,0.0)
+  result_table[7,5] <- determineTolerance(sa_results_sl,sl_expected,0.2)
+  result_table[7,6] <- determineMultiple(sa_results_sl,sl_expected,0.0)
+  result_table[7,7] <- determineTolerance(sa_results_toy,toy_expected,0.0)
+  result_table[7,8] <- determineTolerance(sa_results_toy,toy_expected,0.2)
+  result_table[7,9] <- determineMultiple(sa_results_toy,toy_expected,0.0)
+  
+  result_table[8,1] <- determineTolerance(ze_results_cran,cran_expected,0.0)
+  result_table[8,2] <- determineTolerance(ze_results_cran,cran_expected,0.2)
+  result_table[8,3] <- determineMultiple(ze_results_cran,cran_expected,0.0)
+  result_table[8,4] <- determineTolerance(ze_results_sl,sl_expected,0.0)
+  result_table[8,5] <- determineTolerance(ze_results_sl,sl_expected,0.2)
+  result_table[8,6] <- determineMultiple(ze_results_sl,sl_expected,0.0)
+  result_table[8,7] <- determineTolerance(ze_results_toy,toy_expected,0.0)
+  result_table[8,8] <- determineTolerance(ze_results_toy,toy_expected,0.2)
+  result_table[8,9] <- determineMultiple(ze_results_toy,toy_expected,0.0)
+  
+  result_table[9,1] <- determineTolerance(aze_results_cran,cran_expected,0.0)
+  result_table[9,2] <- determineTolerance(aze_results_cran,cran_expected,0.2)
+  result_table[9,3] <- determineMultiple(aze_results_cran,cran_expected,0.0)
+  result_table[9,4] <- determineTolerance(aze_results_sl,sl_expected,0.0)
+  result_table[9,5] <- determineTolerance(aze_results_sl,sl_expected,0.2)
+  result_table[9,6] <- determineMultiple(aze_results_sl,sl_expected,0.0)
+  result_table[9,7] <- determineTolerance(aze_results_toy,toy_expected,0.0)
+  result_table[9,8] <- determineTolerance(aze_results_toy,toy_expected,0.2)
+  result_table[9,9] <- determineMultiple(aze_results_toy,toy_expected,0.0)
+  
+  result_table[10,1] <- determineTolerance(zed_results_cran,cran_expected,0.0)
+  result_table[10,2] <- determineTolerance(zed_results_cran,cran_expected,0.2)
+  result_table[10,3] <- determineMultiple(zed_results_cran,cran_expected,0.0)
+  result_table[10,4] <- determineTolerance(zed_results_sl,sl_expected,0.0)
+  result_table[10,5] <- determineTolerance(zed_results_sl,sl_expected,0.2)
+  result_table[10,6] <- determineMultiple(zed_results_sl,sl_expected,0.0)
+  result_table[10,7] <- determineTolerance(zed_results_toy,toy_expected,0.0)
+  result_table[10,8] <- determineTolerance(zed_results_toy,toy_expected,0.2)
+  result_table[10,9] <- determineMultiple(zed_results_toy,toy_expected,0.0)
+  
+  result_table[11,1] <- determineTolerance(azed_results_cran,cran_expected,0.0)
+  result_table[11,2] <- determineTolerance(azed_results_cran,cran_expected,0.2)
+  result_table[11,3] <- determineMultiple(azed_results_cran,cran_expected,0.0)
+  result_table[11,4] <- determineTolerance(azed_results_sl,sl_expected,0.0)
+  result_table[11,5] <- determineTolerance(azed_results_sl,sl_expected,0.2)
+  result_table[11,6] <- determineMultiple(azed_results_sl,sl_expected,0.0)
+  result_table[11,7] <- determineTolerance(azed_results_toy,toy_expected,0.0)
+  result_table[11,8] <- determineTolerance(azed_results_toy,toy_expected,0.2)
+  result_table[11,9] <- determineMultiple(azed_results_toy,toy_expected,0.0)
+  
+  result_table[12,1] <- determineTolerance(csazed_results_cran,cran_expected,0.0)
+  result_table[12,2] <- determineTolerance(csazed_results_cran,cran_expected,0.2)
+  result_table[12,3] <- determineMultiple(csazed_results_cran,cran_expected,0.0)
+  result_table[12,4] <- determineTolerance(csazed_results_sl,sl_expected,0.0)
+  result_table[12,5] <- determineTolerance(csazed_results_sl,sl_expected,0.2)
+  result_table[12,6] <- determineMultiple(csazed_results_sl,sl_expected,0.0)
+  result_table[12,7] <- determineTolerance(csazed_results_toy,toy_expected,0.0)
+  result_table[12,8] <- determineTolerance(csazed_results_toy,toy_expected,0.2)
+  result_table[12,9] <- determineMultiple(csazed_results_toy,toy_expected,0.0)
+  
+  result_table[13,1] <- determineTolerance(csazed2_results_cran,cran_expected,0.0)
+  result_table[13,2] <- determineTolerance(csazed2_results_cran,cran_expected,0.2)
+  result_table[13,3] <- determineMultiple(csazed2_results_cran,cran_expected,0.0)
+  result_table[13,4] <- determineTolerance(csazed2_results_sl,sl_expected,0.0)
+  result_table[13,5] <- determineTolerance(csazed2_results_sl,sl_expected,0.2)
+  result_table[13,6] <- determineMultiple(csazed2_results_sl,sl_expected,0.0)
+  result_table[13,7] <- determineTolerance(csazed2_results_toy,toy_expected,0.0)
+  result_table[13,8] <- determineTolerance(csazed2_results_toy,toy_expected,0.2)
+  result_table[13,9] <- determineMultiple(csazed2_results_toy,toy_expected,0.0)
+  
+  print(result_table)
+  
+  #CD-plot
+  cran_expected <- unlist(cran_expected)
+  
+  dev.new()
+  plotCD(data.frame(
+    findFrequency=determineDistance(findfrequency_results_cran, cran_expected),
+    seasonLength=determineDistance(seasonLength_results_cran, cran_expected),
+    s=determineDistance(s_results_cran, cran_expected),
+    sa=determineDistance(sa_results_cran, cran_expected),
+    ze=determineDistance(ze_results_cran, cran_expected),
+    zed=determineDistance(zed_results_cran, cran_expected),
+    azed=determineDistance(azed_results_cran, cran_expected),
+    aze=determineDistance(aze_results_cran, cran_expected),
+    sazed_down=determineDistance(sazed_down_results_cran, cran_expected),
+    sazed_diff=determineDistance(sazed_diff_results_cran, cran_expected),
+    sazed_alt=determineDistance(sazed_alt_results_cran, cran_expected),
+    csazed=determineDistance(csazed_results_cran, cran_expected),
+    csazed2=determineDistance(csazed2_results_cran, cran_expected)
+  ),
+  
+  decreasing=F,cex = 1)
+  
+  
+  dev.new()
+  plotCD(data.frame(
+    findFrequency=determineDistance(findfrequency_results_sl, sl_expected),
+    seasonLength=determineDistance(seasonLength_results_sl, sl_expected),
+    s=determineDistance(s_results_sl, sl_expected),
+    sa=determineDistance(sa_results_sl, sl_expected),
+    ze=determineDistance(ze_results_sl, sl_expected),
+    zed=determineDistance(zed_results_sl, sl_expected),
+    azed=determineDistance(azed_results_sl, sl_expected),
+    aze=determineDistance(aze_results_sl, sl_expected),
+    sazed_down=determineDistance(sazed_down_results_sl, sl_expected),
+    sazed_diff=determineDistance(sazed_diff_results_sl, sl_expected),
+    sazed_alt=determineDistance(sazed_alt_results_sl, sl_expected),
+    csazed=determineDistance(csazed_results_sl, sl_expected),
+    csazed2=determineDistance(csazed2_results_sl, sl_expected)
+  ),
+  
+  decreasing=F,cex = 1)
+  
+  dev.new()
+  plotCD(data.frame(
+    findFrequency=determineDistance(findfrequency_results_toy, toy_expected),
+    seasonLength=determineDistance(seasonLength_results_toy, toy_expected),
+    s=determineDistance(s_results_toy, toy_expected),
+    sa=determineDistance(sa_results_toy, toy_expected),
+    ze=determineDistance(ze_results_toy, toy_expected),
+    zed=determineDistance(zed_results_toy, toy_expected),
+    azed=determineDistance(azed_results_toy, toy_expected),
+    aze=determineDistance(aze_results_toy, toy_expected),
+    sazed_down=determineDistance(sazed_down_results_toy, toy_expected),
+    sazed_diff=determineDistance(sazed_diff_results_toy, toy_expected),
+    sazed_alt=determineDistance(sazed_alt_results_toy, toy_expected),
+    csazed=determineDistance(csazed_results_toy, toy_expected),
+    csazed2=determineDistance(csazed2_results_toy, toy_expected)
+  ),
+  
+  decreasing=F,cex = 1)
+}
+library(dplyr)
+acfPeak <- function(x){ #sucks
+  #a <- x %>% acf.fft(lag.max = length(x)-1,plot = F) %>% {.$acf}
+  a <- x %>% acf.fft
+  a_n1 <- c(1,a[1:(length(a)-1)])
+  a_p1 <- c(a[2:(length(a))],0)
+  tau <- which(a_n1 < a & a > a_p1)
+  tau %>% diff %>% median %>% return
+}
+
+deepSazed2 <- function(x){
+  library(dplyr)
+  library(pracma)
+  if (anyNA(x))
+  {
+    print('NA is not supported')
+    return(1)
+  }
+  if (any(is.infinite(x)) || any(is.complex(x)))
+  {
+    print('complex numbers are not supported')
+    return(1)
+  }
+  if (var(x) == 0)
+  {
+    print('x has no variance')
+    return(1)
+  }
+  m <- rep(1,6)
+  x %>% as.vector() %>% detrend() %>% as.numeric() %>% scale -> x
+  x %>% repAcf(reps = 10,method = 'fft') -> a
+  
+  x %>% S() -> m[1]
+  a %>% S() -> m[2]
+  x %>% ze() -> m[3]
+  a %>% ze() -> m[4]
+  x %>% zed() -> m[5]
+  a %>% zed() -> m[6]
+  m %>% print()
+  #m[1] %>% print
+  m <- m %>% unique()
+  m <- m[which(m > 2)]
+  if (length(m) == 0){
+    return(1)
+  }
+  certainties <- sapply(m,function(d){
+    
+    k <- floor(length(x)/d)
+    if (d <=2 | k <= 3)
+    {
+      return(-1)
+    }
+    subs <- sapply(1:k,function(i){x[(((i-1)*d)+1):(i*d)]})
+    subs %>% cor() %>% min %>% return()
+    
+  })
+  certainties %>% {min(which(. == max(.)))} %>% {m[.]} %>% return
+}
+
+deepVioline <- function(x){
+  require(pracma)
+  require(dplyr)
+  x <- x %>% as.vector() %>% detrend() %>% as.numeric() %>% scale()
+  n <- length(x)
+  spec <- fftwtools::fftw(x) %>% abs %>% {.^2} %>% {.[1:trunc(n/2)]}
+  spec %>% plot.ts(log='y')
+  spec %>% which.max() %>% {n/.} %>% round %>%return
+}
+acf.normal <- function(x){
+  a <- stats::acf(x,plot = F,lag.max = length(x)-1)
+  return(a$acf)
+}
+acf.pure <- function(x){
+  require(fftwtools)
+  x %>% fftw %>% abs %>% {.^2} %>% fftw(inverse = 1) %>% Re %>% {./.[1]} %>% return
+}
+spec.pure <- function(x){
+  require(fftwtools)
+  x %>% fftw %>% abs %>% return
 }

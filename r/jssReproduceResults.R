@@ -136,13 +136,20 @@ jssReproduceResults <- function(path='../')
   
   #plot package usage example
   dev.new()
-  results <- c()
+  results1 <- c()
+  results2 <- c()
+  results3 <- c()
   for (season_length in 3:300)
   {
-    results <- c(results, sazed(sin((1:1800)*2*pi/season_length)))
+    results1 <- c(results1, S(sin((1:1800)*2*pi/season_length)))
+    results2 <- c(results2, zed(sin((1:1800)*2*pi/season_length)))
+    results3 <- c(results3, ze(sin((1:1800)*2*pi/season_length)))
   }
   plot(3:300, type='l', col='black', xlab='Expected season length', ylab='Computed season length')
-  lines(results, col='blue')
+  lines(results1, col='blue')
+  lines(results2, col='red')
+  lines(results3, col='green')
+  
   
   #plot dataset histograms
   dev.new()
@@ -168,7 +175,8 @@ jssReproduceResults <- function(path='../')
   aze_results_cran <- c()
   zed_results_cran <- c()
   azed_results_cran <- c()
-  deep_sazed_results_cran <- c()
+  csazed_results_cran <- c()
+  csazed2_results_cran <- c()
   
   findfrequency_results_sl <- c()
   seasonLength_results_sl  <- c()
@@ -181,7 +189,8 @@ jssReproduceResults <- function(path='../')
   aze_results_sl <- c()
   zed_results_sl <- c()
   azed_results_sl <- c()
-  deep_sazed_results_sl <- c()
+  csazed_results_sl <- c()
+  csazed2_results_sl <- c()
   
   findfrequency_results_toy <- c()
   seasonLength_results_toy  <- c()
@@ -194,7 +203,8 @@ jssReproduceResults <- function(path='../')
   aze_results_toy <- c()
   zed_results_toy <- c()
   azed_results_toy <- c()
-  deep_sazed_results_toy <- c()
+  csazed_results_toy <- c()
+  csazed2_results_toy <- c()
   
   for (test in cran_data)
   {
@@ -220,8 +230,10 @@ jssReproduceResults <- function(path='../')
     zed_results_cran <- c(zed_results_cran,r)
     r <- tryCatch(azed(test),error = function(e){return(1)})
     azed_results_cran <- c(azed_results_cran,r)
-    r <- tryCatch(deepSazed(test),error = function(e){return(1)})
-    deep_sazed_results_cran <- c(deep_sazed_results_cran,r)
+    r <- tryCatch(csazed(test),error = function(e){return(1)})
+    csazed_results_cran <- c(csazed_results_cran,r)
+    r <- tryCatch(csazed2(test),error = function(e){return(1)})
+    csazed2_results_cran <- c(csazed2_results_cran,r)
   }
   
   for (test in sl_data)
@@ -248,8 +260,10 @@ jssReproduceResults <- function(path='../')
     zed_results_sl <- c(zed_results_sl,r)
     r <- tryCatch(azed(test),error = function(e){return(1)})
     azed_results_sl <- c(azed_results_sl,r)
-    r <- tryCatch(deepSazed(test),error = function(e){return(1)})
-    deep_sazed_results_sl <- c(deep_sazed_results_sl,r)
+    r <- tryCatch(csazed(test),error = function(e){return(1)})
+    csazed_results_sl <- c(csazed_results_sl,r)
+    r <- tryCatch(csazed2(test),error = function(e){return(1)})
+    csazed2_results_sl <- c(csazed2_results_sl,r)
   }
   
   for (test in toy_data)
@@ -276,11 +290,13 @@ jssReproduceResults <- function(path='../')
     zed_results_toy <- c(zed_results_toy,r)
     r <- tryCatch(azed(test),error = function(e){return(1)})
     azed_results_toy <- c(azed_results_toy,r)
-    r <- tryCatch(deepSazed(test),error = function(e){return(1)})
-    deep_sazed_results_toy <- c(deep_sazed_results_toy,r)
+    r <- tryCatch(csazed(test),error = function(e){return(1)})
+    csazed_results_toy <- c(csazed_results_toy,r)
+    r <- tryCatch(csazed2(test),error = function(e){return(1)})
+    csazed2_results_toy <- c(csazed2_results_toy,r)
   }
   #create table
-  result_table <- matrix(nrow = 12, ncol = 9)
+  result_table <- matrix(nrow = 13, ncol = 9)
   result_table[1,1] <- determineTolerance(findfrequency_results_cran,cran_expected,0.0)
   result_table[1,2] <- determineTolerance(findfrequency_results_cran,cran_expected,0.2)
   result_table[1,3] <- determineMultiple(findfrequency_results_cran,cran_expected,0.0)
@@ -392,15 +408,25 @@ jssReproduceResults <- function(path='../')
   result_table[11,8] <- determineTolerance(azed_results_toy,toy_expected,0.2)
   result_table[11,9] <- determineMultiple(azed_results_toy,toy_expected,0.0)
   
-  result_table[12,1] <- determineTolerance(deep_sazed_results_cran,cran_expected,0.0)
-  result_table[12,2] <- determineTolerance(deep_sazed_results_cran,cran_expected,0.2)
-  result_table[12,3] <- determineMultiple(deep_sazed_results_cran,cran_expected,0.0)
-  result_table[12,4] <- determineTolerance(deep_sazed_results_sl,sl_expected,0.0)
-  result_table[12,5] <- determineTolerance(deep_sazed_results_sl,sl_expected,0.2)
-  result_table[12,6] <- determineMultiple(deep_sazed_results_sl,sl_expected,0.0)
-  result_table[12,7] <- determineTolerance(deep_sazed_results_toy,toy_expected,0.0)
-  result_table[12,8] <- determineTolerance(deep_sazed_results_toy,toy_expected,0.2)
-  result_table[12,9] <- determineMultiple(deep_sazed_results_toy,toy_expected,0.0)
+  result_table[12,1] <- determineTolerance(csazed_results_cran,cran_expected,0.0)
+  result_table[12,2] <- determineTolerance(csazed_results_cran,cran_expected,0.2)
+  result_table[12,3] <- determineMultiple(csazed_results_cran,cran_expected,0.0)
+  result_table[12,4] <- determineTolerance(csazed_results_sl,sl_expected,0.0)
+  result_table[12,5] <- determineTolerance(csazed_results_sl,sl_expected,0.2)
+  result_table[12,6] <- determineMultiple(csazed_results_sl,sl_expected,0.0)
+  result_table[12,7] <- determineTolerance(csazed_results_toy,toy_expected,0.0)
+  result_table[12,8] <- determineTolerance(csazed_results_toy,toy_expected,0.2)
+  result_table[12,9] <- determineMultiple(csazed_results_toy,toy_expected,0.0)
+  
+  result_table[13,1] <- determineTolerance(csazed2_results_cran,cran_expected,0.0)
+  result_table[13,2] <- determineTolerance(csazed2_results_cran,cran_expected,0.2)
+  result_table[13,3] <- determineMultiple(csazed2_results_cran,cran_expected,0.0)
+  result_table[13,4] <- determineTolerance(csazed2_results_sl,sl_expected,0.0)
+  result_table[13,5] <- determineTolerance(csazed2_results_sl,sl_expected,0.2)
+  result_table[13,6] <- determineMultiple(csazed2_results_sl,sl_expected,0.0)
+  result_table[13,7] <- determineTolerance(csazed2_results_toy,toy_expected,0.0)
+  result_table[13,8] <- determineTolerance(csazed2_results_toy,toy_expected,0.2)
+  result_table[13,9] <- determineMultiple(csazed2_results_toy,toy_expected,0.0)
   
   print(result_table)
   
@@ -420,7 +446,8 @@ jssReproduceResults <- function(path='../')
     sazed_down=determineDistance(sazed_down_results_cran, cran_expected),
     sazed_diff=determineDistance(sazed_diff_results_cran, cran_expected),
     sazed_alt=determineDistance(sazed_alt_results_cran, cran_expected),
-    deep_sazed=determineDistance(deep_sazed_results_cran, cran_expected)
+    csazed=determineDistance(csazed_results_cran, cran_expected),
+    csazed2=determineDistance(csazed2_results_cran, cran_expected)
   ),
   
   decreasing=F,cex = 1)
@@ -439,7 +466,8 @@ jssReproduceResults <- function(path='../')
     sazed_down=determineDistance(sazed_down_results_sl, sl_expected),
     sazed_diff=determineDistance(sazed_diff_results_sl, sl_expected),
     sazed_alt=determineDistance(sazed_alt_results_sl, sl_expected),
-    deep_sazed=determineDistance(deep_sazed_results_sl, sl_expected)
+    csazed=determineDistance(csazed_results_sl, sl_expected),
+    csazed2=determineDistance(csazed2_results_sl, sl_expected)
   ),
   
   decreasing=F,cex = 1)
@@ -457,7 +485,8 @@ jssReproduceResults <- function(path='../')
     sazed_down=determineDistance(sazed_down_results_toy, toy_expected),
     sazed_diff=determineDistance(sazed_diff_results_toy, toy_expected),
     sazed_alt=determineDistance(sazed_alt_results_toy, toy_expected),
-    deep_sazed=determineDistance(deep_sazed_results_toy, toy_expected)
+    csazed=determineDistance(csazed_results_toy, toy_expected),
+    csazed2=determineDistance(csazed2_results_toy, toy_expected)
   ),
   
   decreasing=F,cex = 1)

@@ -1,5 +1,6 @@
 callSeasonLength = function(y)
 {
+  #return(1)
   if (is.character(y))
   {
     y = read.table(y);
