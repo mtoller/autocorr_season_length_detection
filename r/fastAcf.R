@@ -6,7 +6,7 @@ acf.fft <- function(datavector)
   #  and  https://lingpipe-blog.com/2012/06/08/autocorrelation-fft-kiss-eigen
   
   # get a centred version of the signal
-  #datavector <- datavector - mean(datavector)
+  datavector <- datavector - mean(datavector)
   
   #  need to pad with zeroes first ; pad to a power of 2 will give faster FFT
   len.dat <- length(datavector)

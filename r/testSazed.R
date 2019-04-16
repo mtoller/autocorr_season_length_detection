@@ -27,7 +27,7 @@ testSazed <- function(datafile){
   
   r = tryCatch(
     {
-      r = sazed(y);
+      r = exp1(y);
     },
     error = function(cond)
     {

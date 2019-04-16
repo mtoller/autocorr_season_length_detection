@@ -1,9 +1,6 @@
 callSeasonLength = function(y)
 {
-  switch(Sys.info()[['sysname']],
-         Windows= {pathSymbol <- '\\'},
-         Linux  = {pathSymbol <- '/'},
-         Darwin = {pathSymbol <- '/'})
+  #return(1)
   if (is.character(y))
   {
     y = read.table(y);
