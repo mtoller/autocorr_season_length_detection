@@ -784,7 +784,7 @@ acfPeak <- function(x){ #sucks
   tau %>% diff %>% median %>% return
 }
 
-deepSazed2 <- function(x){
+sazed.opt <- function(x){
   library(dplyr)
   library(pracma)
   if (anyNA(x))
@@ -812,7 +812,7 @@ deepSazed2 <- function(x){
   a %>% ze() -> m[4]
   x %>% zed() -> m[5]
   a %>% zed() -> m[6]
-  m %>% print()
+  #m %>% print()
   #m[1] %>% print
   m <- m %>% unique()
   m <- m[which(m > 2)]

@@ -67,11 +67,11 @@ S <- function(y,preprocess=T)
 #' @examples
 #' azed(y)
 #' azed(y, preprocess = F)
-azed <- function(y,preprocess=T)
+azed <- function(y,preprocess=T,...)
 {
   if (preprocess)
     y <- preprocessTs(y)
-  return(zed(computeAcf(y),F));
+  return(zed(computeAcf(y,...),F));
 }
 #' Compute the ZED component of the SAZED ensemble
 #' 
@@ -177,9 +177,9 @@ ze = function(y,preprocess=T)
 #' @return The shortened autocorrelation
 #' @examples
 #' computeAcf(y)
-computeAcf <- function(y)
+computeAcf <- function(y,...)
 {
-  return(repAcf(y,method = 'fft'))
+  return(repAcf(y,method = 'fft',...))
   autocorrelation <- as.ts(acf.fft(y))
   autocorrelation <- autocorrelation[2:length(autocorrelation)]
   factor <- 2/3
@@ -212,7 +212,7 @@ preprocessTs <- function(y)
 #' season_length <- 26
 #' y <- sin(1:400*2*pi/season_length)
 #' sazed(y)
-sazed <- function(y,iter=0,method="alt",preprocess=T)
+sazed <- function(y,iter=0,method="down",preprocess=T)
 {
   require(signal)
   require(forecast)
