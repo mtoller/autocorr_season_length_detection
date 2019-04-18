@@ -27,7 +27,7 @@ testSazed <- function(datafile){
   
   r = tryCatch(
     {
-      r = sazed(y);
+      r = exp1(y);
     },
     error = function(cond)
     {
@@ -79,9 +79,9 @@ testPublicDatasets <- function(tolerance = 0,testExternal=F)
   sazed_diff_results <- c()
   sazed_alt_results <- c()
   #install.packages(c("fma", "expsmooth", "fpp2", "TSA", "astsa", "AER"))
-  source('trueSeasonLength.R')
+  #source('trueSeasonLength.R')
   source('baselines.R')
-  source('newSeasonLength.R')
+  #source('newSeasonLength.R')
   source('sazed.R')
   dataset_libraries <- c("fma", "expsmooth", "fpp2", "TSA", "astsa", "AER")
   for (a_dataset_library in dataset_libraries) {

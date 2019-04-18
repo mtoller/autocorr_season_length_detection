@@ -1,0 +1,7 @@
+REPRODUCE RESULTS:
+To reproduce the results of the submission to the journal, run the function 'reproduceResults()' in r/reproduceResults.R
+The expected runtime is between 2 and 10 minutes, depending on the underlying hardware.
+
+REQUIREMENTS:
+R - see https://cran.r-project.org/doc/manuals/r-release/R-admin.html for installation
+octave/matlab with packages signal and tsa
