@@ -27,27 +27,30 @@ reproduceResults <- function()
   #load CRAN dataset
   cran_data <- list()
   cran_expected <- list()
+  cran_lengths <- list()
   cran_dataset_names <- list()
-  cran_dataset_names[["fma"]] <- c("airpass", "beer", "bricksq", "condmilk", "elec", "fancy", "hsales",
-                                "hsales2", "labour", "milk", "motion", "plastics", "qsales", "ukdeaths",
+  cran_dataset_names[["fma"]] <- c("airpass", "beer", "bricksq", "condmilk", "dole", "elec", "fancy", "hsales",
+                                "hsales2", "invent15", "labour", "milk", "motion", "pigs", "plastics", "pollution", "qelec", "qsales", "shampoo", "ukdeaths",
                                 "usdeaths", "uselec", "writing")
-  cran_dataset_names[["expsmooth"]] <- c("cangas", "enplanements", "frexport", "mcopper", "ukcars", "utility", 
+  cran_dataset_names[["expsmooth"]] <- c("bonds", "cangas", "enplanements", "frexport", "mcopper", "ukcars", "usgdp", "utility", 
                                       "vehicles", "visitors")
-  cran_dataset_names[["fpp2"]] <- c("a10", "ausbeer", "auscafe", "austourists", "debitcards", "elecequip", "h02",
+  cran_dataset_names[["fpp"]] <- c("cafe", "euretail")
+  cran_dataset_names[["fpp2"]] <- c("a10", "ausbeer", "auscafe", "ausgdp", "austourists", "debitcards", "elecequip", "gasoline", "h02",
                                  "hyndsight", "qauselec", "qcement", "qgas", "usmelec")
-  cran_dataset_names[["TSA"]] <- c("airmiles", "co2", "flow", "JJ", "oilfilters", "retail", "tempdub")
-  cran_dataset_names[["astsa"]] <- c("birth", "cmort", "flu", "gas", "oil", "part", "prodn", "rec",
-                                  "so2", "soi", "sunspotz", "tempr", "UnempRate")
-  cran_dataset_names[["AER"]] <- c("DutchSales", "UKNonDurables")
+  cran_dataset_names[["TSA"]] <- c("airmiles", "beersales", "co2", "flow", "hours", "milk", "JJ", "oilfilters", "prescrip", "prey.eq", "retail", "tempdub", "wages", "winnebago")
+  cran_dataset_names[["astsa"]] <- c("birth", "cmort", "flu", "gas", "hor", "part", "prodn", "qinfl", "qintr", "rec",
+                                  "so2", "soi", "sunspotz", "tempr", "unemp", "UnempRate")
+  cran_dataset_names[["AER"]] <- c("BondYield", "DutchSales", "UKNonDurables")
   number_cran_dataset_names <- Reduce(sum, lapply(cran_dataset_names, length))
-  dataset_libraries <- c("fma", "expsmooth", "fpp2", "TSA", "astsa", "AER")
+  dataset_libraries <- c("fma", "expsmooth", "fpp", "fpp2", "TSA", "astsa", "AER")
   for (a_dataset_library in dataset_libraries) {
     library(a_dataset_library, character.only = T)
     data(list = cran_dataset_names[[a_dataset_library]])
     for (a_dataset in cran_dataset_names[[a_dataset_library]]) {
       ts_data <- get(a_dataset)
-      cran_data <- append(cran_data,list(as.vector(ts_data)))
+      cran_data <- append(cran_data, list(as.vector(ts_data)))
       cran_expected <- append(cran_expected, frequency(ts_data))
+      cran_lengths <- append(cran_lengths, length(ts_data))
     }
   }
   
@@ -107,7 +110,7 @@ reproduceResults <- function()
   plot(sunspot.month)
   
   #plot acf of sunspots with zero-crossings
-  plot.ts(acf.normal(sunspot.month))
+  plot.ts(acf.normal(sunspot.month),ylab="ACF")
   lines(rep(0,length(sunspot.month)),col='blue')
   
   #plot comparison of base methods
@@ -121,7 +124,7 @@ reproduceResults <- function()
     results2 <- c(results2, zed(acf.fft(sin((1:1800)*2*pi/season_length))))
     results3 <- c(results3, ze(sin((1:1800)*2*pi/season_length)))
   }
-  plot(3:300, type='l', col='black', xlab='Expected season length', ylab='Computed season length')
+  plot(3:300, type='l', col='black', xlab='Expected Season Length', ylab='Computed Season Length')
   lines(results1, col='blue')
   lines(results2, col='red')
   lines(results3, col='green')
