@@ -105,11 +105,27 @@ reproduceResults <- function()
     sl_data <- append(sl_data,list(unlist(read.table(paste('..',pathSymbol,'sl_data',pathSymbol,'testC',pathSymbol,'t',i,sep='',collapse = ' '))[1],
                                           use.names = F)))}
   
+  #load Cauchy dataset
+  cauchy_data <- list()
+  for (i in 1:100){
+    if (i < 10){
+      cauchy_data <- append(cauchy_data,list(unlist(read.table(paste0('..',pathSymbol,'cauchy_data',pathSymbol,'cauchy0',i)),
+                                                use.names = F)))
+    }
+    else{
+      cauchy_data <- append(cauchy_data,list(unlist(read.table(paste0('..',pathSymbol,'cauchy_data',pathSymbol,'cauchy',i)),
+                                                    use.names = F)))
+    }
+  }
+  cauchy_expected <- as.numeric(unlist(read.table(paste0('..',pathSymbol,'cauchy_data',pathSymbol,'cauchy_expected'))))
+  
+  
   #plot sunspots
   dev.new()
   plot(sunspot.month)
   
   #plot acf of sunspots with zero-crossings
+  dev.new()
   plot.ts(acf.normal(sunspot.month),ylab="ACF")
   lines(rep(0,length(sunspot.month)),col='blue')
   
@@ -128,19 +144,6 @@ reproduceResults <- function()
   lines(results1, col='blue')
   lines(results2, col='red')
   lines(results3, col='green')
-  
-  
-  #plot dataset histograms
-  dev.new()
-  par(mfrow=c(1,2))
-  hist(log(unlist(lapply(cran_data,length))),breaks = 20)
-  hist(log(unlist(cran_expected)))
-  
-  dev.new()
-  par(mfrow=c(1,2))
-  hist(log(unlist(lapply(sl_data,length))),breaks = 50,xlim = c(2,14))
-  hist(log(unlist(sl_expected)),breaks = 50,xlim = c(0,12))
-  
   
   #compute results
   findfrequency_results_cran <- c()
@@ -165,16 +168,16 @@ reproduceResults <- function()
   zed_results_sl <- c()
   azed_results_sl <- c()
   
-  findfrequency_results_toy <- c()
-  seasonLength_results_toy  <- c()
-  sazed_opt_results_toy <- c()
-  sazed_maj_results_toy <- c()
-  s_results_toy <- c()
-  sa_results_toy <- c()
-  ze_results_toy <- c()
-  aze_results_toy <- c()
-  zed_results_toy <- c()
-  azed_results_toy <- c()
+  findfrequency_results_cauchy <- c()
+  seasonLength_results_cauchy  <- c()
+  sazed_opt_results_cauchy <- c()
+  sazed_maj_results_cauchy <- c()
+  s_results_cauchy <- c()
+  sa_results_cauchy <- c()
+  ze_results_cauchy <- c()
+  aze_results_cauchy <- c()
+  zed_results_cauchy <- c()
+  azed_results_cauchy <- c()
   
   for (test in cran_data)
   {
@@ -224,28 +227,28 @@ reproduceResults <- function()
     azed_results_sl <- c(azed_results_sl,r)
   }
   
-  for (test in toy_data)
+  for (test in cauchy_data)
   {
     r <- tryCatch(findfrequency(test),error = function(e){return(1)})
-    findfrequency_results_toy <- c(findfrequency_results_toy,r)
+    findfrequency_results_cauchy <- c(findfrequency_results_cauchy,r)
     r <- tryCatch(callSeasonLength(test),error = function(e){return(1)})
-    seasonLength_results_toy  <- c(seasonLength_results_toy,r)
+    seasonLength_results_cauchy  <- c(seasonLength_results_cauchy,r)
     r <- tryCatch(sazed.opt(test),error = function(e){return(1)})
-    sazed_opt_results_toy <- c(sazed_opt_results_toy,r)
+    sazed_opt_results_cauchy <- c(sazed_opt_results_cauchy,r)
     r <- tryCatch(sazed(test,method='down'),error = function(e){return(1)})
-    sazed_maj_results_toy <- c(sazed_maj_results_toy,r)
+    sazed_maj_results_cauchy <- c(sazed_maj_results_cauchy,r)
     r <- tryCatch(S(test),error = function(e){return(1)})
-    s_results_toy <- c(s_results_toy,r)
+    s_results_cauchy <- c(s_results_cauchy,r)
     r <- tryCatch(Sa(test),error = function(e){return(1)})
-    sa_results_toy <- c(sa_results_toy,r)
+    sa_results_cauchy <- c(sa_results_cauchy,r)
     r <- tryCatch(ze(test),error = function(e){return(1)})
-    ze_results_toy <- c(ze_results_toy,r)
+    ze_results_cauchy <- c(ze_results_cauchy,r)
     r <- tryCatch(aze(test),error = function(e){return(1)})
-    aze_results_toy <- c(aze_results_toy,r)
+    aze_results_cauchy <- c(aze_results_cauchy,r)
     r <- tryCatch(zed(test),error = function(e){return(1)})
-    zed_results_toy <- c(zed_results_toy,r)
+    zed_results_cauchy <- c(zed_results_cauchy,r)
     r <- tryCatch(azed(test),error = function(e){return(1)})
-    azed_results_toy <- c(azed_results_toy,r)
+    azed_results_cauchy <- c(azed_results_cauchy,r)
   }
   #create table
   result_table <- matrix(nrow = 10, ncol = 9)
@@ -255,9 +258,9 @@ reproduceResults <- function()
   result_table[1,4] <- determineTolerance(findfrequency_results_sl,sl_expected,0.0)
   result_table[1,5] <- determineTolerance(findfrequency_results_sl,sl_expected,0.2)
   result_table[1,6] <- determineMultiple(findfrequency_results_sl,sl_expected,0.0)
-  result_table[1,7] <- determineTolerance(findfrequency_results_toy,toy_expected,0.0)
-  result_table[1,8] <- determineTolerance(findfrequency_results_toy,toy_expected,0.2)
-  result_table[1,9] <- determineMultiple(findfrequency_results_toy,toy_expected,0.0)
+  result_table[1,7] <- determineTolerance(findfrequency_results_cauchy,cauchy_expected,0.0)
+  result_table[1,8] <- determineTolerance(findfrequency_results_cauchy,cauchy_expected,0.2)
+  result_table[1,9] <- determineMultiple(findfrequency_results_cauchy,cauchy_expected,0.0)
   
   result_table[2,1] <- determineTolerance(seasonLength_results_cran,cran_expected,0.0)
   result_table[2,2] <- determineTolerance(seasonLength_results_cran,cran_expected,0.2)
@@ -265,9 +268,9 @@ reproduceResults <- function()
   result_table[2,4] <- determineTolerance(seasonLength_results_sl,sl_expected,0.0)
   result_table[2,5] <- determineTolerance(seasonLength_results_sl,sl_expected,0.2)
   result_table[2,6] <- determineMultiple(seasonLength_results_sl,sl_expected,0.0)
-  result_table[2,7] <- determineTolerance(seasonLength_results_toy,toy_expected,0.0)
-  result_table[2,8] <- determineTolerance(seasonLength_results_toy,toy_expected,0.2)
-  result_table[2,9] <- determineMultiple(seasonLength_results_toy,toy_expected,0.0)
+  result_table[2,7] <- determineTolerance(seasonLength_results_cauchy,cauchy_expected,0.0)
+  result_table[2,8] <- determineTolerance(seasonLength_results_cauchy,cauchy_expected,0.2)
+  result_table[2,9] <- determineMultiple(seasonLength_results_cauchy,cauchy_expected,0.0)
   
   
   result_table[3,1] <- determineTolerance(sazed_opt_results_cran,cran_expected,0.0)
@@ -276,9 +279,9 @@ reproduceResults <- function()
   result_table[3,4] <- determineTolerance(sazed_opt_results_sl,sl_expected,0.0)
   result_table[3,5] <- determineTolerance(sazed_opt_results_sl,sl_expected,0.2)
   result_table[3,6] <- determineMultiple(sazed_opt_results_sl,sl_expected,0.0)
-  result_table[3,7] <- determineTolerance(sazed_opt_results_toy,toy_expected,0.0)
-  result_table[3,8] <- determineTolerance(sazed_opt_results_toy,toy_expected,0.2)
-  result_table[3,9] <- determineMultiple(sazed_opt_results_toy,toy_expected,0.0)
+  result_table[3,7] <- determineTolerance(sazed_opt_results_cauchy,cauchy_expected,0.0)
+  result_table[3,8] <- determineTolerance(sazed_opt_results_cauchy,cauchy_expected,0.2)
+  result_table[3,9] <- determineMultiple(sazed_opt_results_cauchy,cauchy_expected,0.0)
   
   result_table[4,1] <- determineTolerance(sazed_maj_results_cran,cran_expected,0.0)
   result_table[4,2] <- determineTolerance(sazed_maj_results_cran,cran_expected,0.2)
@@ -286,9 +289,9 @@ reproduceResults <- function()
   result_table[4,4] <- determineTolerance(sazed_maj_results_sl,sl_expected,0.0)
   result_table[4,5] <- determineTolerance(sazed_maj_results_sl,sl_expected,0.2)
   result_table[4,6] <- determineMultiple(sazed_maj_results_sl,sl_expected,0.0)
-  result_table[4,7] <- determineTolerance(sazed_maj_results_toy,toy_expected,0.0)
-  result_table[4,8] <- determineTolerance(sazed_maj_results_toy,toy_expected,0.2)
-  result_table[4,9] <- determineMultiple(sazed_maj_results_toy,toy_expected,0.0)
+  result_table[4,7] <- determineTolerance(sazed_maj_results_cauchy,cauchy_expected,0.0)
+  result_table[4,8] <- determineTolerance(sazed_maj_results_cauchy,cauchy_expected,0.2)
+  result_table[4,9] <- determineMultiple(sazed_maj_results_cauchy,cauchy_expected,0.0)
   
   result_table[5,1] <- determineTolerance(s_results_cran,cran_expected,0.0)
   result_table[5,2] <- determineTolerance(s_results_cran,cran_expected,0.2)
@@ -296,9 +299,9 @@ reproduceResults <- function()
   result_table[5,4] <- determineTolerance(s_results_sl,sl_expected,0.0)
   result_table[5,5] <- determineTolerance(s_results_sl,sl_expected,0.2)
   result_table[5,6] <- determineMultiple(s_results_sl,sl_expected,0.0)
-  result_table[5,7] <- determineTolerance(s_results_toy,toy_expected,0.0)
-  result_table[5,8] <- determineTolerance(s_results_toy,toy_expected,0.2)
-  result_table[5,9] <- determineMultiple(s_results_toy,toy_expected,0.0)
+  result_table[5,7] <- determineTolerance(s_results_cauchy,cauchy_expected,0.0)
+  result_table[5,8] <- determineTolerance(s_results_cauchy,cauchy_expected,0.2)
+  result_table[5,9] <- determineMultiple(s_results_cauchy,cauchy_expected,0.0)
   
   result_table[6,1] <- determineTolerance(sa_results_cran,cran_expected,0.0)
   result_table[6,2] <- determineTolerance(sa_results_cran,cran_expected,0.2)
@@ -306,9 +309,9 @@ reproduceResults <- function()
   result_table[6,4] <- determineTolerance(sa_results_sl,sl_expected,0.0)
   result_table[6,5] <- determineTolerance(sa_results_sl,sl_expected,0.2)
   result_table[6,6] <- determineMultiple(sa_results_sl,sl_expected,0.0)
-  result_table[6,7] <- determineTolerance(sa_results_toy,toy_expected,0.0)
-  result_table[6,8] <- determineTolerance(sa_results_toy,toy_expected,0.2)
-  result_table[6,9] <- determineMultiple(sa_results_toy,toy_expected,0.0)
+  result_table[6,7] <- determineTolerance(sa_results_cauchy,cauchy_expected,0.0)
+  result_table[6,8] <- determineTolerance(sa_results_cauchy,cauchy_expected,0.2)
+  result_table[6,9] <- determineMultiple(sa_results_cauchy,cauchy_expected,0.0)
   
   result_table[7,1] <- determineTolerance(zed_results_cran,cran_expected,0.0)
   result_table[7,2] <- determineTolerance(zed_results_cran,cran_expected,0.2)
@@ -316,9 +319,9 @@ reproduceResults <- function()
   result_table[7,4] <- determineTolerance(zed_results_sl,sl_expected,0.0)
   result_table[7,5] <- determineTolerance(zed_results_sl,sl_expected,0.2)
   result_table[7,6] <- determineMultiple(zed_results_sl,sl_expected,0.0)
-  result_table[7,7] <- determineTolerance(zed_results_toy,toy_expected,0.0)
-  result_table[7,8] <- determineTolerance(zed_results_toy,toy_expected,0.2)
-  result_table[7,9] <- determineMultiple(zed_results_toy,toy_expected,0.0)
+  result_table[7,7] <- determineTolerance(zed_results_cauchy,cauchy_expected,0.0)
+  result_table[7,8] <- determineTolerance(zed_results_cauchy,cauchy_expected,0.2)
+  result_table[7,9] <- determineMultiple(zed_results_cauchy,cauchy_expected,0.0)
   
   result_table[8,1] <- determineTolerance(azed_results_cran,cran_expected,0.0)
   result_table[8,2] <- determineTolerance(azed_results_cran,cran_expected,0.2)
@@ -326,9 +329,9 @@ reproduceResults <- function()
   result_table[8,4] <- determineTolerance(azed_results_sl,sl_expected,0.0)
   result_table[8,5] <- determineTolerance(azed_results_sl,sl_expected,0.2)
   result_table[8,6] <- determineMultiple(azed_results_sl,sl_expected,0.0)
-  result_table[8,7] <- determineTolerance(azed_results_toy,toy_expected,0.0)
-  result_table[8,8] <- determineTolerance(azed_results_toy,toy_expected,0.2)
-  result_table[8,9] <- determineMultiple(azed_results_toy,toy_expected,0.0)
+  result_table[8,7] <- determineTolerance(azed_results_cauchy,cauchy_expected,0.0)
+  result_table[8,8] <- determineTolerance(azed_results_cauchy,cauchy_expected,0.2)
+  result_table[8,9] <- determineMultiple(azed_results_cauchy,cauchy_expected,0.0)
   
   result_table[9,1] <- determineTolerance(ze_results_cran,cran_expected,0.0)
   result_table[9,2] <- determineTolerance(ze_results_cran,cran_expected,0.2)
@@ -336,9 +339,9 @@ reproduceResults <- function()
   result_table[9,4] <- determineTolerance(ze_results_sl,sl_expected,0.0)
   result_table[9,5] <- determineTolerance(ze_results_sl,sl_expected,0.2)
   result_table[9,6] <- determineMultiple(ze_results_sl,sl_expected,0.0)
-  result_table[9,7] <- determineTolerance(ze_results_toy,toy_expected,0.0)
-  result_table[9,8] <- determineTolerance(ze_results_toy,toy_expected,0.2)
-  result_table[9,9] <- determineMultiple(ze_results_toy,toy_expected,0.0)
+  result_table[9,7] <- determineTolerance(ze_results_cauchy,cauchy_expected,0.0)
+  result_table[9,8] <- determineTolerance(ze_results_cauchy,cauchy_expected,0.2)
+  result_table[9,9] <- determineMultiple(ze_results_cauchy,cauchy_expected,0.0)
   
   result_table[10,1] <- determineTolerance(aze_results_cran,cran_expected,0.0)
   result_table[10,2] <- determineTolerance(aze_results_cran,cran_expected,0.2)
@@ -346,14 +349,18 @@ reproduceResults <- function()
   result_table[10,4] <- determineTolerance(aze_results_sl,sl_expected,0.0)
   result_table[10,5] <- determineTolerance(aze_results_sl,sl_expected,0.2)
   result_table[10,6] <- determineMultiple(aze_results_sl,sl_expected,0.0)
-  result_table[10,7] <- determineTolerance(aze_results_toy,toy_expected,0.0)
-  result_table[10,8] <- determineTolerance(aze_results_toy,toy_expected,0.2)
-  result_table[10,9] <- determineMultiple(aze_results_toy,toy_expected,0.0)
+  result_table[10,7] <- determineTolerance(aze_results_cauchy,cauchy_expected,0.0)
+  result_table[10,8] <- determineTolerance(aze_results_cauchy,cauchy_expected,0.2)
+  result_table[10,9] <- determineMultiple(aze_results_cauchy,cauchy_expected,0.0)
+  
+  result_table[,3] <- result_table[,3] - result_table[,1]
+  result_table[,6] <- result_table[,6] - result_table[,4]
+  result_table[,9] <- result_table[,9] - result_table[,7]
   
   df <- data.frame(result_table)
   names(df) <- c('Cran+-0%','Cran+-20%','CranMult','SL+-0%','SL+-20%','SLMult',
                  'Cauchy+-0%','Cauchy+-20%','CauchyMultiple')
-  row.names(df) <- c('seasonLength','findFrequency','Sazed_opt','Sazed_maj','S',
+  row.names(df) <- c('findFrequency','seasonLength','Sazed_opt','Sazed_maj','S',
                      'Sa','zed','azed','ze','aze')
   print(df)
   
@@ -395,16 +402,16 @@ reproduceResults <- function()
   
   dev.new()
   plotCD(data.frame(
-    findFrequency=determineDistance(findfrequency_results_toy, toy_expected),
-    seasonLength=determineDistance(seasonLength_results_toy, toy_expected),
-    s=determineDistance(s_results_toy, toy_expected),
-    sa=determineDistance(sa_results_toy, toy_expected),
-    ze=determineDistance(ze_results_toy, toy_expected),
-    zed=determineDistance(zed_results_toy, toy_expected),
-    azed=determineDistance(azed_results_toy, toy_expected),
-    aze=determineDistance(aze_results_toy, toy_expected),
-    sazed_opt=determineDistance(sazed_opt_results_toy, toy_expected),
-    sazed_maj=determineDistance(sazed_maj_results_toy, toy_expected)
+    findFrequency=determineDistance(findfrequency_results_cauchy, cauchy_expected),
+    seasonLength=determineDistance(seasonLength_results_cauchy, cauchy_expected),
+    s=determineDistance(s_results_cauchy, cauchy_expected),
+    sa=determineDistance(sa_results_cauchy, cauchy_expected),
+    ze=determineDistance(ze_results_cauchy, cauchy_expected),
+    zed=determineDistance(zed_results_cauchy, cauchy_expected),
+    azed=determineDistance(azed_results_cauchy, cauchy_expected),
+    aze=determineDistance(aze_results_cauchy, cauchy_expected),
+    sazed_opt=determineDistance(sazed_opt_results_cauchy, cauchy_expected),
+    sazed_maj=determineDistance(sazed_maj_results_cauchy, cauchy_expected)
   ),
   
   decreasing=F,cex = 1)
