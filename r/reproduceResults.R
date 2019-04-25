@@ -374,7 +374,7 @@ reproduceResults <- function()
   #CD-plot
   cran_expected <- unlist(cran_expected)
   
-  pdf(file = 'friedman_cran.pdf',height = 6,width=8)
+  pdf(file = 'friedman_cran.pdf',height = 6,width=10)
   plotCD(data.frame(
     findFrequency=determineDistance(findfrequency_results_cran, cran_expected),
     seasonLength=determineDistance(seasonLength_results_cran, cran_expected),
@@ -391,7 +391,7 @@ reproduceResults <- function()
   decreasing=F,cex = 1)
   dev.off()
   
-  pdf(file = 'friedman_sl.pdf',height = 6,width=8)
+  pdf(file = 'friedman_sl.pdf',height = 6,width=10)
   plotCD(data.frame(
     findFrequency=determineDistance(findfrequency_results_sl, sl_expected),
     seasonLength=determineDistance(seasonLength_results_sl, sl_expected),
@@ -408,7 +408,7 @@ reproduceResults <- function()
   decreasing=F,cex = 1)
   dev.off()
   
-  pdf(file = 'friedman_cauchy.pdf',height = 6,width=8)
+  pdf(file = 'friedman_cauchy.pdf',height = 6,width=10)
   plotCD(data.frame(
     findFrequency=determineDistance(findfrequency_results_cauchy, cauchy_expected),
     seasonLength=determineDistance(seasonLength_results_cauchy, cauchy_expected),
