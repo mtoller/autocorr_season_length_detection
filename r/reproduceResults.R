@@ -121,16 +121,22 @@ reproduceResults <- function()
   
   
   #plot sunspots
-  dev.new()
-  plot(sunspot.month)
+  pdf(file = 'sunspots.pdf',height = 5,width=10)
+  par(cex=1.2)
+  plot(sunspot.month,main='',xlab='Time',ylab='Mean Sunspot Number')
+  dev.off()
   
   #plot acf of sunspots with zero-crossings
-  dev.new()
-  plot.ts(acf.normal(sunspot.month),ylab="ACF")
-  lines(rep(0,length(sunspot.month)),col='blue')
+  pdf(file = 'sunspots_acf.pdf',height = 5,width=10)
+  par(cex=1.2)
+  plot.ts(acf.normal(sunspot.month)[1:2000],ylab="Autocorrelation Function",xlab='Lag',main='')
+  lines(rep(0,2000),col='blue')
+  dev.off()
   
   #plot comparison of base methods
-  dev.new()
+  pdf(file = 'base_comparison.pdf',height = 5,width=10)
+  par(cex=1.2)
+  
   results1 <- c()
   results2 <- c()
   results3 <- c()
@@ -144,6 +150,7 @@ reproduceResults <- function()
   lines(results1, col='blue')
   lines(results2, col='red')
   lines(results3, col='green')
+  dev.off()
   
   #compute results
   findfrequency_results_cran <- c()
@@ -367,7 +374,7 @@ reproduceResults <- function()
   #CD-plot
   cran_expected <- unlist(cran_expected)
   
-  dev.new()
+  pdf(file = 'friedman_cran.pdf',height = 6,width=8)
   plotCD(data.frame(
     findFrequency=determineDistance(findfrequency_results_cran, cran_expected),
     seasonLength=determineDistance(seasonLength_results_cran, cran_expected),
@@ -382,9 +389,9 @@ reproduceResults <- function()
   ),
   
   decreasing=F,cex = 1)
+  dev.off()
   
-  
-  dev.new()
+  pdf(file = 'friedman_sl.pdf',height = 6,width=8)
   plotCD(data.frame(
     findFrequency=determineDistance(findfrequency_results_sl, sl_expected),
     seasonLength=determineDistance(seasonLength_results_sl, sl_expected),
@@ -399,8 +406,9 @@ reproduceResults <- function()
   ),
   
   decreasing=F,cex = 1)
+  dev.off()
   
-  dev.new()
+  pdf(file = 'friedman_cauchy.pdf',height = 6,width=8)
   plotCD(data.frame(
     findFrequency=determineDistance(findfrequency_results_cauchy, cauchy_expected),
     seasonLength=determineDistance(seasonLength_results_cauchy, cauchy_expected),
@@ -415,6 +423,7 @@ reproduceResults <- function()
   ),
   
   decreasing=F,cex = 1)
+  dev.off()
   
 }
 
