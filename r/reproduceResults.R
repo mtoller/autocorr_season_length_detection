@@ -152,6 +152,13 @@ reproduceResults <- function()
   lines(results3, col='green')
   dev.off()
   
+  #plot cauchy example
+  pdf(file = 'cauchy_example1.pdf',height = 5,width=10)
+  cauchy_data[[97]] %>% plot.ts(main='',xlab='Time',ylab='Value')
+  dev.off()
+  pdf(file = 'cauchy_example2.pdf',height = 5,width=10)
+  cauchy_data[[97]] %>% plot.ts(ylim=c(-4000,4000),main='',xlab='Time',ylab='Value')
+  dev.off()
   #compute results
   findfrequency_results_cran <- c()
   seasonLength_results_cran  <- c()
