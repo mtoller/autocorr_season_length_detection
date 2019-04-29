@@ -8,7 +8,7 @@ generateToyData <- function(N=10){
     period <- sample(3:1000)[1]
     amplitude <- sample(3:1000)[1]
     noise_amplitude <- sample(3:amplitude)[1]
-    offset <- sample(0:100)[1]
+    offset <- sample(seq(-pi,pi,0.001))[1]
     if (sample(c(T,F)[1])){
       method <- sin
     }
