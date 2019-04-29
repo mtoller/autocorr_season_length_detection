@@ -2,11 +2,11 @@
 # first calculates autocovariance, then auto correlation at the end
 acf.fft <- function(datavector)
 {
-  # see http://www.tibonihoo.net/literate_musing/autocorrelations.html#wikispecd
+  # see http://www.tibonihoo.net/literate_musing/autocorrelations.html
   #  and  https://lingpipe-blog.com/2012/06/08/autocorrelation-fft-kiss-eigen
 
   # get a centred version of the signal
-  #datavector <- datavector - mean(datavector)
+  datavector <- datavector - mean(datavector)
 
   #  need to pad with zeroes first ; pad to a power of 2 will give faster FFT
   len.dat <- length(datavector)
@@ -40,4 +40,16 @@ acf.fft <- function(datavector)
   fftdat <- fftdat/max(abs(fftdat))
 
   return(fftdat)
+}
+
+# repeat application of acf.fft
+repAcf <- function(data,reps = 10)
+{
+  a <- data
+  if (reps < 1) return(a)
+  for (i in 1:reps)
+  {
+    a <- acf.fft(a)
+  }    
+  return(a)
 }

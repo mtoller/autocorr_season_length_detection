@@ -1,15 +1,13 @@
-* using log directory 'd:/RCompile/CRANguest/R-devel/sazed.Rcheck'
-* using R Under development (unstable) (2018-07-23 r75001)
+* using log directory 'd:/RCompile/CRANguest/R-devel/sazedR.Rcheck'
+* using R version 3.6.0 RC (2019-04-21 r76417)
 * using platform: x86_64-w64-mingw32 (64-bit)
 * using session charset: ISO8859-1
-* checking for file 'sazed/DESCRIPTION' ... OK
+* checking for file 'sazedR/DESCRIPTION' ... OK
 * checking extension type ... Package
-* this is package 'sazed' version '1.0.0'
+* this is package 'sazedR' version '2.0.0'
 * package encoding: UTF-8
-* checking CRAN incoming feasibility ... NOTE
+* checking CRAN incoming feasibility ... Note_to_CRAN_maintainers
 Maintainer: 'Tiago Santos <teixeiradossantos@tugraz.at>'
-
-New submission
 * checking package namespace information ... OK
 * checking package dependencies ... OK
 * checking if this is a source package ... OK
@@ -17,9 +15,10 @@ New submission
 * checking for hidden files and directories ... OK
 * checking for portable file names ... OK
 * checking serialization versions ... OK
-* checking whether package 'sazed' can be installed ... OK
+* checking whether package 'sazedR' can be installed ... OK
 * checking installed package size ... OK
 * checking package directory ... OK
+* checking for future file timestamps ... OK
 * checking DESCRIPTION meta-information ... OK
 * checking top-level files ... OK
 * checking for left-over files ... OK
@@ -47,7 +46,7 @@ New submission
 * checking S3 generic/method consistency ... OK
 * checking replacement functions ... OK
 * checking foreign function calls ... OK
-* checking R code for possible problems ... [4s] OK
+* checking R code for possible problems ... [6s] OK
 * checking Rd files ... OK
 * checking Rd metadata ... OK
 * checking Rd line widths ... OK
@@ -58,8 +57,8 @@ New submission
 * checking Rd contents ... OK
 * checking for unstated dependencies in examples ... OK
 * checking examples ...
-** running examples for arch 'i386' ... [1s] OK
-** running examples for arch 'x64' ... [1s] OK
+** running examples for arch 'i386' ... [2s] OK
+** running examples for arch 'x64' ... [2s] OK
 * checking PDF version of manual ... OK
 * DONE
-Status: 1 NOTE
+Status: OK

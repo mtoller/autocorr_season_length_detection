@@ -14,13 +14,14 @@ computation.}
 }
 \value{
 The SA season length estimate of y.
-#@examples
-season_length <- 26
-y <- sin(1:400*2*pi/season_length)
-Sa(y)
-Sa(y, preprocess = FALSE)
 }
 \description{
 \code{Sa} computes the autocorrelation of its argument, and then derives the
 season length from its spectral density.
+}
+\examples{
+season_length <- 26
+y <- sin(1:400*2*pi/season_length)
+Sa(y)
+Sa(y, preprocess = FALSE)
 }

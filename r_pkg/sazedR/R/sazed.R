@@ -1,12 +1,12 @@
-#' sazed: A package for for estimating the season length of a seasonal
+#' sazedR: A package for for estimating the season length of a seasonal
 #' time series.
 #'
-#' The sazed package provides the main function to compute season length,
+#' The sazedR package provides the main function to compute season length,
 #' sazed, which is an ensemble of many season length estimation methods,
 #' also included in this package.
 #'
 #' @docType package
-#' @name sazed
+#' @name sazedR
 #' @import stats
 NULL
 
@@ -19,7 +19,7 @@ NULL
 #' @param preprocess If true, y is detrended and z-normalized before
 #'   computation.
 #' @return The SA season length estimate of y.
-#' #@examples
+#' @examples
 #' season_length <- 26
 #' y <- sin(1:400*2*pi/season_length)
 #' Sa(y)
@@ -40,7 +40,7 @@ Sa <- function(y,preprocess=T)
 #' @param preprocess If true, y is detrended and z-normalized before
 #'   computation.
 #' @return The S season length estimate of y.
-#' #@examples
+#' @examples
 #' season_length <- 26
 #' y <- sin(1:400*2*pi/season_length)
 #' S(y)
@@ -81,7 +81,7 @@ S <- function(y,preprocess=T)
 #' @param preprocess If true, y is detrended and z-normalized before
 #'   computation.
 #' @return The AZED season length estimate of y.
-#' #@examples
+#' @examples
 #' season_length <- 26
 #' y <- sin(1:400*2*pi/season_length)
 #' azed(y)
@@ -102,7 +102,7 @@ azed <- function(y,preprocess=T)
 #' @param preprocess If true, y is detrended and z-normalized before
 #'   computation.
 #' @return The ZED season length estimate of y.
-#' #@examples
+#' @examples
 #' season_length <- 26
 #' y <- sin(1:400*2*pi/season_length)
 #' zed(y)
@@ -146,7 +146,7 @@ zed <- function(y,preprocess=T)
 #' @param preprocess If true, y is detrended and z-normalized before
 #'   computation.
 #' @return The AZE season length estimate of y.
-#' #@examples
+#' @examples
 #' season_length <- 26
 #' y <- sin(1:400*2*pi/season_length)
 #' aze(y)
@@ -166,7 +166,7 @@ aze <- function(y,preprocess=T)
 #' @param preprocess If true, y is detrended and z-normalized before
 #'   computation.
 #' @return The ZE season length estimate of y.
-#' #@examples
+#' @examples
 #' season_length <- 26
 #' y <- sin(1:400*2*pi/season_length)
 #' ze(y)
@@ -204,17 +204,14 @@ ze <- function(y,preprocess=T)
 #' @param y The input time series.
 #'
 #' @return The shortened autocorrelation
-#' #@examples
+#' @examples
 #' season_length <- 26
 #' y <- sin(1:400*2*pi/season_length)
 #' computeAcf(y)
-#' #@export
+#' @export
 computeAcf <- function(y)
 {
-  autocorrelation <- as.ts(acf.fft(y))
-  autocorrelation <- autocorrelation[2:length(autocorrelation)]
-  factor <- 2/3
-  return(autocorrelation[1:round(length(autocorrelation)*factor)])
+  return(repAcf(y))
 }
 #' Preprocess Time Series for SAZED ensemble
 #'
@@ -223,31 +220,33 @@ computeAcf <- function(y)
 #' @param y The input time series.
 #'
 #' @return The detrended and z-normalized time series.
-#' #@examples
+#' @examples
 #' season_length <- 26
 #' y <- sin(1:400*2*pi/season_length)
 #' preprocessTs(y)
-#' #@export
+#' @export
 preprocessTs <- function(y)
 {
   return(scale(as.ts(pracma::detrend(as.vector(y)))))
 }
-#' SAZED Ensemble
+#' SAZED Ensemble (Majority)
 #'
-#' \code{sazed} estimates a time series' season length by computing 6 different estimates
-#' and taking a majority vote.
+#' \code{sazed.maj} estimates a time series' season length by computing 6 different 
+#' estimates and taking a majority vote.
 #'
 #' @param y The input time series.
 #' @param iter The recursion depth.
 #' @param method The method used for breaking ties. One of \code{c("alt","diff","down")}.
+#' @param preprocess If true, y is detrended and z-normalized before
+#'   computation.
 #'
 #' @return The season length of the input time series.
 #' @examples
 #' season_length <- 26
 #' y <- sin(1:400*2*pi/season_length)
-#' sazed(y)
+#' sazed.maj(y)
 #' @export
-sazed <- function(y,iter=0,method="alt")
+sazed.maj <- function(y,iter=0,method="down",preprocess=T)
 {
   if (anyNA(y))
   {
@@ -266,16 +265,15 @@ sazed <- function(y,iter=0,method="alt")
   }
 
   results <- c()
-  results <- c(results,S(y))
-  results <- c(results,Sa(y))
-  results <- c(results,ze(y))
-  results <- c(results,aze(y))
-  results <- c(results,zed(y))
-  results <- c(results,azed(y))
-
-  results <- results[which(!is.infinite(results))];
-  results <- results[which(!is.na(results))];
-
+  results <- c(results,S(y,preprocess))
+  results <- c(results,Sa(y,preprocess))
+  results <- c(results,ze(y,preprocess))
+  results <- c(results,aze(y,preprocess))
+  results <- c(results,zed(y,preprocess))
+  results <- c(results,azed(y,preprocess))
+  
+  results <- results[which(!is.infinite(results))]
+  results <- results[which(!is.na(results))]
   if (var(results) == 0)
   {
     return(results[1])
@@ -288,30 +286,91 @@ sazed <- function(y,iter=0,method="alt")
   {
     if (method == "down")
     {
-      return(2*sazed(downsample(y,2),method = "down"))
+      return(2*sazed.maj(downsample(y,2),method = "down"))
     }
-
+      
     else if(method == "diff")
     {
-      return(sazed(diff(y,lag = 1),method = "diff"));
+      return(sazed.maj(diff(y,lag = 1),method = "diff"));
     }
-
+    
     iter <- iter + 1
 
     if (pracma::mod(iter,2) == 1)
     {
-      return(2*sazed(downsample(y,2),iter))
+      return(2*sazed.maj(downsample(y,2),iter))
     }
-    return(sazed(diff(y,lag = 1),iter,method="alt"))
+    return(sazed.maj(diff(y,lag = 1),iter,method="alt"))
   }
   else if (length(tab[which(tab == max(tab))]) > 1)
   {
     sorted = sort(unique_results,decreasing = TRUE)
-    return(sorted[which.max(tabulate(match(sort(results,decreasing = TRUE),sorted)))]);
+    return(sorted[which.max(tabulate(match(sort(results,decreasing = TRUE),sorted)))])
   }
 
-  vote = unique_results[which.max(tabulate(match(results,unique_results)))];
-  return(vote);
+  vote = unique_results[which.max(tabulate(match(results,unique_results)))]
+  return(vote)
+}
+#' SAZED Ensemble (Optimum)
+#'
+#' \code{sazed} estimates a time series' season length by combining 3 different estimates
+#' computed on an input time series and its 10-fold self-composed autocorrelation.
+#'
+#' @param y The input time series.
+#'
+#' @return The season length of the input time series.
+#' @examples
+#' season_length <- 26
+#' y <- sin(1:400*2*pi/season_length)
+#' sazed(y)
+#' @export
+#' @importFrom dplyr %>%
+sazed <- function(y){
+  if (anyNA(y))
+  {
+    print('NA is not supported')
+    return(1)
+  }
+  if (any(is.infinite(y)) || any(is.complex(y)))
+  {
+    print('complex numbers are not supported')
+    return(1)
+  }
+  if (var(y) == 0)
+  {
+    print('y has no variance')
+    return(1)
+  }
+  m <- rep(1,6)
+  y %>% as.vector() %>% pracma::detrend() %>% as.numeric() %>% scale -> y
+  y %>% repAcf(reps = 10) -> a
+  
+  y %>% S() -> m[1]
+  a %>% S() -> m[2]
+  y %>% ze() -> m[3]
+  a %>% ze() -> m[4]
+  y %>% zed() -> m[5]
+  a %>% zed() -> m[6]
+  #m %>% print()
+  #m[1] %>% print
+  m <- m %>% unique()
+  m <- m[which(m > 2)]
+  if (length(m) == 0){
+    return(1)
+  }
+  certainties <- sapply(m,function(d){
+    
+    k <- floor(length(y)/d)
+    if (d <=2 | k <= 3)
+    {
+      return(-1)
+    }
+    subs <- sapply(1:k,function(i){y[(((i-1)*d)+1):(i*d)]})
+    subs %>% cor() %>% min %>% return()
+    
+  })
+  certainties %>% {min(which(certainties == max(certainties)))} -> certainties
+  certainties %>% {m[certainties]} %>% return
 }
 #' Downsample Time Series
 #'
@@ -323,5 +382,5 @@ sazed <- function(y,iter=0,method="alt")
 #' @importFrom zoo zoo rollapply
 downsample <- function(data, window_size=2)
 {
-  return(ts(as.ts(rollapply(zoo(data),width=2,by=2,FUN=mean)),frequency=1))
+  return(ts(as.ts(rollapply(zoo(data),width=window_size,by=window_size,FUN=mean)),frequency=1))
 }

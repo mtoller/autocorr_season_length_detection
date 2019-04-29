@@ -14,13 +14,14 @@ computation.}
 }
 \value{
 The AZED season length estimate of y.
-#@examples
-season_length <- 26
-y <- sin(1:400*2*pi/season_length)
-azed(y)
-azed(y, preprocess = FALSE)
 }
 \description{
 \code{azed} computes the autocorrelation of its argument, and then derives the
 season length from its the autocorrelations zero density.
+}
+\examples{
+season_length <- 26
+y <- sin(1:400*2*pi/season_length)
+azed(y)
+azed(y, preprocess = FALSE)
 }

@@ -14,12 +14,13 @@ computation.}
 }
 \value{
 The ZE season length estimate of y.
-#@examples
+}
+\description{
+\code{ze} estimates the season length of its argument from the mean zero distance
+}
+\examples{
 season_length <- 26
 y <- sin(1:400*2*pi/season_length)
 ze(y)
 ze(y, preprocess = FALSE)
-}
-\description{
-\code{ze} estimates the season length of its argument from the mean zero distance
 }

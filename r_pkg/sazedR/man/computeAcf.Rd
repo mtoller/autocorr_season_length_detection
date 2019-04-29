@@ -11,13 +11,13 @@ computeAcf(y)
 }
 \value{
 The shortened autocorrelation
-#@examples
-season_length <- 26
-y <- sin(1:400*2*pi/season_length)
-computeAcf(y)
-#@export
 }
 \description{
 \code{computeAcf} computes the autocorrelation function of its argument and discards
 the zero lag and all lags greater than 2/3 of the argument's length
+}
+\examples{
+season_length <- 26
+y <- sin(1:400*2*pi/season_length)
+computeAcf(y)
 }

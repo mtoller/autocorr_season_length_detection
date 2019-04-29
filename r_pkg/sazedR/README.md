@@ -12,16 +12,16 @@ This package requires the debian packages libxml2-dev, libfftw3-dev
 and zlib1g-dev. Once you have those, then simply execute:
 
 ``` r
-install.packages("sazed")
+install.packages("sazedR")
 ```
 
 
 ## Usage
 Estimate the season length of a seasonal time series with the 
-ensemble method SAZED:
+variations of the ensemble method SAZED:
 
 ``` r
-library(sazed)
+library(sazedR)
 
 season_length <- 26
 y <- sin(1:400*2*pi/season_length)

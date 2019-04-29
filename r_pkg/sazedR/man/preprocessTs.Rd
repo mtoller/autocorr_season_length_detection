@@ -11,12 +11,12 @@ preprocessTs(y)
 }
 \value{
 The detrended and z-normalized time series.
-#@examples
-season_length <- 26
-y <- sin(1:400*2*pi/season_length)
-preprocessTs(y)
-#@export
 }
 \description{
 \code{preprocessTs} detrends and z-normalizes its argument.
+}
+\examples{
+season_length <- 26
+y <- sin(1:400*2*pi/season_length)
+preprocessTs(y)
 }

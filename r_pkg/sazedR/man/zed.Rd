@@ -14,13 +14,14 @@ computation.}
 }
 \value{
 The ZED season length estimate of y.
-#@examples
-season_length <- 26
-y <- sin(1:400*2*pi/season_length)
-zed(y)
-zed(y, preprocess = FALSE)
 }
 \description{
 \code{zed} computes the zero density of its argument, and then derives the
 season length from it.
+}
+\examples{
+season_length <- 26
+y <- sin(1:400*2*pi/season_length)
+zed(y)
+zed(y, preprocess = FALSE)
 }
