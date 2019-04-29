@@ -1,0 +1,32 @@
+Package: sazedR
+Type: Package
+Title: Parameter-Free Domain-Agnostic Season Length Detection in Time
+        Series
+Version: 2.0.0
+Authors@R: c(
+    person("Maximilian", "Toller", , "maximilian.toller@student.tugraz.at", c("aut")), 
+    person("Tiago", "Santos", , "teixeiradossantos@tugraz.at", c("aut", "cre")), 
+    person("Roman", "Kern", , "rkern@know-center.at", c("aut"))
+    )
+Description: Spectral and Average Autocorrelation Zero Distance Density
+    ('sazed') is a method for estimating the season length of a 
+    seasonal time series. 'sazed' is aimed at practitioners, as it employs only 
+    domain-agnostic preprocessing and does not depend on parameter tuning or 
+    empirical constants. The computation of 'sazed' relies on the efficient 
+    autocorrelation computation methods suggested by Thibauld Nion (2012, URL: 
+    <http://www.tibonihoo.net/literate_musing/autocorrelations.html>) and by 
+    Bob Carpenter (2012, URL: 
+    <https://lingpipe-blog.com/2012/06/08/autocorrelation-fft-kiss-eigen/>).
+License: GPL-2
+Encoding: UTF-8
+LazyData: true
+Imports: bspec (>= 1.5), dplyr (>= 0.8.0.1), fftwtools (>= 0.9.8), 
+        pracma (>= 2.1.4), zoo (>= 1.8-3)
+RoxygenNote: 6.1.1
+NeedsCompilation: no
+Packaged: 2019-04-26 11:37:03 UTC; rstudio
+Author: Maximilian Toller [aut],
+  Tiago Santos [aut, cre],
+  Roman Kern [aut]
+Maintainer: Tiago Santos <teixeiradossantos@tugraz.at>
+Repository: CRAN
