@@ -8,7 +8,7 @@ employs only domain-agnostic pre-processing and does not depend on
 parameter tuning or empirical constants.
 
 ## Installation
-This package requires the debian packages libxml2-dev, libfftw3-dev 
+This package requires the Debian packages libxml2-dev, libfftw3-dev 
 and zlib1g-dev. Once you have those, then simply execute:
 
 ``` r
