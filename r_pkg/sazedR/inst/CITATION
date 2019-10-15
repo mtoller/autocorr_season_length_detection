@@ -1,0 +1,9 @@
+citHeader("To cite sazedR in publications, please use:")
+
+citEntry(entry = "article",
+  author = "Maximilian Toller and Tiago Santos and Roman Kern",
+  title = "SAZED: parameter-free domain-agnostic season length estimation in time series data",
+  journal = "Data Mining and Knowledge Discovery",
+  year = "2019",
+  textVersion = "Toller M, Santos T, Kern R (2019). SAZED: parameter-free domain-agnostic season length estimation in time series data. Data Mining and Knowledge Discovery."
+)

@@ -2,7 +2,7 @@ Package: sazedR
 Type: Package
 Title: Parameter-Free Domain-Agnostic Season Length Detection in Time
         Series
-Version: 2.0.0
+Version: 2.0.1
 Authors@R: c(
     person("Maximilian", "Toller", , "maximilian.toller@student.tugraz.at", c("aut")), 
     person("Tiago", "Santos", , "teixeiradossantos@tugraz.at", c("aut", "cre")), 
@@ -18,13 +18,14 @@ Description: Spectral and Average Autocorrelation Zero Distance Density
     Bob Carpenter (2012, URL: 
     <https://lingpipe-blog.com/2012/06/08/autocorrelation-fft-kiss-eigen/>).
 License: GPL-2
+URL: https://github.com/mtoller/autocorr_season_length_detection/
 Encoding: UTF-8
 LazyData: true
 Imports: bspec (>= 1.5), dplyr (>= 0.8.0.1), fftwtools (>= 0.9.8), 
         pracma (>= 2.1.4), zoo (>= 1.8-3)
 RoxygenNote: 6.1.1
 NeedsCompilation: no
-Packaged: 2019-04-26 11:37:03 UTC; rstudio
+Packaged: 2019-09-16 19:20:03 UTC; rstudio
 Author: Maximilian Toller [aut],
   Tiago Santos [aut, cre],
   Roman Kern [aut]
