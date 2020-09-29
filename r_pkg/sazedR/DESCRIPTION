@@ -2,7 +2,7 @@ Package: sazedR
 Type: Package
 Title: Parameter-Free Domain-Agnostic Season Length Detection in Time
         Series
-Version: 2.0.1
+Version: 2.0.2
 Authors@R: c(
     person("Maximilian", "Toller", , "maximilian.toller@student.tugraz.at", c("aut")), 
     person("Tiago", "Santos", , "teixeiradossantos@tugraz.at", c("aut", "cre")), 
@@ -14,7 +14,7 @@ Description: Spectral and Average Autocorrelation Zero Distance Density
     domain-agnostic preprocessing and does not depend on parameter tuning or 
     empirical constants. The computation of 'sazed' relies on the efficient 
     autocorrelation computation methods suggested by Thibauld Nion (2012, URL: 
-    <http://www.tibonihoo.net/literate_musing/autocorrelations.html>) and by 
+    <https://etudes.tibonihoo.net/literate_musing/autocorrelations.html>) and by 
     Bob Carpenter (2012, URL: 
     <https://lingpipe-blog.com/2012/06/08/autocorrelation-fft-kiss-eigen/>).
 License: GPL-2

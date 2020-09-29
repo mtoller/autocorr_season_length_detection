@@ -231,7 +231,7 @@ preprocessTs <- function(y)
 }
 #' SAZED Ensemble (Majority)
 #'
-#' \code{sazed.maj} estimates a time series' season length by computing 6 different 
+#' \code{sazed.maj} estimates a time series' season length by computing 6 different
 #' estimates and taking a majority vote.
 #'
 #' @param y The input time series.
@@ -271,7 +271,7 @@ sazed.maj <- function(y,iter=0,method="down",preprocess=T)
   results <- c(results,aze(y,preprocess))
   results <- c(results,zed(y,preprocess))
   results <- c(results,azed(y,preprocess))
-  
+
   results <- results[which(!is.infinite(results))]
   results <- results[which(!is.na(results))]
   if (var(results) == 0)
@@ -288,12 +288,12 @@ sazed.maj <- function(y,iter=0,method="down",preprocess=T)
     {
       return(2*sazed.maj(downsample(y,2),method = "down"))
     }
-      
+
     else if(method == "diff")
     {
       return(sazed.maj(diff(y,lag = 1),method = "diff"));
     }
-    
+
     iter <- iter + 1
 
     if (pracma::mod(iter,2) == 1)
@@ -344,7 +344,7 @@ sazed <- function(y){
   m <- rep(1,6)
   y %>% as.vector() %>% pracma::detrend() %>% as.numeric() %>% scale -> y
   y %>% repAcf(reps = 10) -> a
-  
+
   y %>% S() -> m[1]
   a %>% S() -> m[2]
   y %>% ze() -> m[3]
@@ -359,7 +359,7 @@ sazed <- function(y){
     return(1)
   }
   certainties <- sapply(m,function(d){
-    
+
     k <- floor(length(y)/d)
     if (d <=2 | k <= 3)
     {
@@ -367,10 +367,10 @@ sazed <- function(y){
     }
     subs <- sapply(1:k,function(i){y[(((i-1)*d)+1):(i*d)]})
     subs %>% cor() %>% min %>% return()
-    
+
   })
   certainties %>% {min(which(certainties == max(certainties)))} -> certainties
-  certainties %>% {m[certainties]} %>% return
+  certainties %>% {m[certainties]} %>% return()
 }
 #' Downsample Time Series
 #'
