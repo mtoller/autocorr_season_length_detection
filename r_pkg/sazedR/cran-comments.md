@@ -1,5 +1,5 @@
 ## Test environments
-* local ubuntu 19.04 install: R 3.5.2, R Under development (unstable) (2019-09-10 r77168)
+* local ubuntu 20.04 install: R 4.0.2
 * win-builder (devel)
 
 ## R CMD check results
